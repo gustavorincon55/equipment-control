@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Claims
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+
+  <form method="post" action="/add_claim">
+
+    <div class="form-group d-inline">
+      <input type="text" name="unit" placeholder="Container" autofocus>
+     </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="customer" placeholder="Customer">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="bl" placeholder="Bill of loading">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="charge" placeholder="Charge">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="invoice" placeholder="Invoice">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="date" placeholder="Date">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="status" placeholder="Status">
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="attachements" placeholder="Attachements" >
+    </div>
+
+    <div class="form-group d-inline">
+      <input type="text" name="damage" placeholder="Damage">
+    </div>
+
+    <div class="form-group d-inline">
+      <textarea type="text" name="comment" placeholder="Comments"></textarea>
+    </div>
+
+    <div class="form-group d-inline">
+        <button class="btn btn-primary submit-button" type="submit">Submit</button>
+    </div>
+
+
+  </form>
+
+</div>
+
+{% endblock %}

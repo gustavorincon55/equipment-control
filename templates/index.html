@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    index
+{% endblock %}
+
+{% block main %}
+
+<div class="d-flex justify-content-around align-items-baseline">
+
+    <div class="d-inline">
+        <div class="card " style="width: 18rem;">
+          <div class="card-body">
+            <h5 class="card-title">Claims</h5>
+            <p class="card-text">Tool to keep track of damage claims.</p>
+            <a href="/claims" class="btn btn-primary">Go to claims</a>
+          </div>
+        </div>
+    </div>
+
+    <div class="d-inline">
+        <div class="card " style="width: 18rem;">
+          <div class="card-body">
+            <h5 class="card-title">Tire control</h5>
+            <p class="card-text">Tool to keep track of damage claims.</p>
+            <a href="/damage-report" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Claims
+{% endblock %}
+
+{% block main %}
+
+<div style="margin=auto max-width:100vh;" class="container-fluid overflow-auto">
+	<table class="table table-bordered table-striped claims-table" style="min-width: 90%;">
+		<tr class="thead-dark" classcontenteditable="false">
+			<th scope="col" >Unit</th>
+			<th scope="col" >Customer</th>
+			<th scope="col" >Booking/BOL</th>
+			<th scope="col" >Charges</th>
+			<th scope="col" >Invoice</th>
+			<th scope="col" >Date</th>
+			<th scope="col" >Status</th>
+			<th scope="col" >Attachements</th>
+			<th scope="col" >Damage</th>
+			<th scope="col" style="width:10%;" >Comments</th>
+		</tr>
+		{% for claim in claims %}
+		<tr scope="row" conteneteditable=false>
+			<td class="align-baseline">
+				<div class="claim-cell align-baseline" style="">
+					{{ claim.unit }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell align-baseline" style="">
+					{{ claim.customer }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell align-baseline" style="">
+					{{ claim.bl }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell align-baseline" style="">
+					{{ claim.charge }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.invoice }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.date }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.status }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.attachements }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.damage }}
+				</div>
+			</td>
+			<td class="align-baseline">
+				<div class="claim-cell" style="">
+					{{ claim.comment }}
+				</div>
+			</td>
+		</tr>
+		{% endfor %}
+
+	</table>
+</div>
+
+{% endblock %}
