@@ -52,6 +52,7 @@ db2 = SQLAlchemy(app)
 @login_required
 def index():
     """Make the user select which app to use"""
+    return render_template("claims.html", claims = Claim.query.all())
     return render_template("index.html")
 
 
@@ -99,6 +100,13 @@ def display_claims():
     return render_template("history.html", trans = trans)
     """
 
+@app.route("/update_claim/<row>", methods=["GET"])
+@login_required
+def update_claim(row):
+    row = row.split("@@")
+    print(row)
+    return "working"
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
@@ -144,7 +152,7 @@ def login():
     """Log user in"""
 
     # Forget any user_id
-    session.clear()
+    # session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
