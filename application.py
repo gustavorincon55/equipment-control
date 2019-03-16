@@ -85,26 +85,36 @@ def display_claims():
 
     return render_template("claims.html", claims=Claim.query.all())
 
-    """
-    trans = db.execute('SELECT * FROM "trans" WHERE userId == :userId ORDER BY datetime', userId = session["user_id"])
-
-    for tran in trans:
-
-        if tran["_type"] == "sell":
-            tran["shares"] = tran["shares"] * -1
-            tran["total"] = tran["total"] * -1
-
-        tran["price"] = usd(tran["price"])
-        tran["total"] = usd(tran["total"])
-
-    return render_template("history.html", trans = trans)
-    """
-
 @app.route("/update_claim/<row>", methods=["GET"])
 @login_required
 def update_claim(row):
     row = row.split("@@")
-    print(row)
+
+    new_data = dict()
+
+    for value in row:
+        param = value.split("=")
+        new_data[param[0]] = param[1]
+
+    print(new_data)
+
+    # old_data = Claim.query.get(new_data['id'])
+
+
+    old_data.unit = new_data['unit']
+    old_data.customer = new_data['customer']
+    old_data.bl = new_data['bl']
+    old_data.charge = new_data['charge']
+    old_data.invoice = new_data['invoice']
+    old_data.date = new_data['date']
+    old_data.status = new_data['status']
+    old_data.attachements = new_data['attachements']
+    old_data.damage = new_data['damage']
+    old_data.comment = new_data['comment']
+
+    db2.session.commit()
+
+
     return "working"
 
 @app.route("/register", methods=["GET", "POST"])
