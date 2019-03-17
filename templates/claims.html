@@ -105,9 +105,12 @@ function addListeners(rows) {
 			isChanged = true;
 		});
 
+		console.log('line 108');
+
 		rows[rowN].addEventListener("blur", function() {
 
 			console.log('blur',this);
+
 			if (isChanged == true) {
 
 				updateDataBase(this);
@@ -152,8 +155,9 @@ function updateDataBase(row) {
 	xhttp.open("GET", "/update_claim/" + getRowData(row), true);
 	xhttp.send();
 	xhttp.onreadystatechange = function() {
-		if(this.status == 200) {
+		if(this.readyState == 4) {
 			console.log(this.responseText);
+			console.log('ready');
 
 		}
 	};

@@ -68,10 +68,12 @@ def add_claim():
 
         db2.session.add(claim)
 
+
         # Check if there where no errors?
         if db2.session.commit() == None:
+            print("claim")
             flash("Claim submited.")
-            return render_template("claims.html",claims = Claim.query.all())
+            return redirect("/claims")
 
     return render_template("add_claim.html")
 
@@ -88,6 +90,7 @@ def display_claims():
 @app.route("/update_claim/<row>", methods=["GET"])
 @login_required
 def update_claim(row):
+    print("\nupdate_claim working\n")
     row = row.split("@@")
 
     new_data = dict()
@@ -98,13 +101,12 @@ def update_claim(row):
 
     print(new_data)
 
-    # old_data = Claim.query.get(new_data['id'])
-
+    old_data = Claim.query.get(new_data['id'])
 
     old_data.unit = new_data['unit']
     old_data.customer = new_data['customer']
     old_data.bl = new_data['bl']
-    old_data.charge = new_data['charge']
+    old_data.charge = usd(new_data['charge'])
     old_data.invoice = new_data['invoice']
     old_data.date = new_data['date']
     old_data.status = new_data['status']
@@ -114,8 +116,8 @@ def update_claim(row):
 
     db2.session.commit()
 
-
-    return "working"
+    print("\n claim updated \n")
+    return "claim updated."
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -323,6 +325,7 @@ def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
 
+    return "\nYou got a mistake: " + e.name + " "+  str(e.code) + "\n"
     flash("You got a mistake: " + e.name + " "+  str(e.code))
     return render_template("layout.html")
 
