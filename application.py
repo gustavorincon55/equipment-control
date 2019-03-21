@@ -1,5 +1,6 @@
 import os
 
+import warnings
 from cs50 import SQL
 
 from flask_sqlalchemy import SQLAlchemy
@@ -30,7 +31,9 @@ def after_request(response):
 
 # Custom filter
 app.jinja_env.filters["usd"] = usd
-
+##
+app.config["TESTING"] = True
+##
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -45,20 +48,30 @@ app.config["PERMANENT_SESSION_LIFETIME"] = 1000;
 db = SQL("sqlite:///finance.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///control.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config['SQLALCHEMY_ECHO'] = True
 
 db2 = SQLAlchemy(app)
+
+warnings.filterwarnings("ignore")
 
 @app.route("/")
 @login_required
 def index():
+    warnings.filterwarnings("ignore")
+
     """Make the user select which app to use"""
-    return render_template("claims.html", claims = Claim.query.all())
-    return render_template("index.html")
+    # avoid annoying deprecation warning
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        return render_template("claims.html", claims = Claim.query.all())
+        return render_template("index.html")
 
 
 @app.route("/add_claim", methods=["GET","POST"])
 @login_required
 def add_claim():
+    warnings.filterwarnings("ignore")
 
     if request.method == "POST":
 
@@ -81,6 +94,8 @@ def add_claim():
 @app.route("/claims")
 @login_required
 def display_claims():
+    warnings.filterwarnings("ignore")
+
     """
     Display all the damage records
     """
@@ -90,6 +105,8 @@ def display_claims():
 @app.route("/update_claim/<row>", methods=["GET"])
 @login_required
 def update_claim(row):
+    warnings.filterwarnings("ignore")
+
     print("\nupdate_claim working\n")
     row = row.split("@@")
 
@@ -121,6 +138,9 @@ def update_claim(row):
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    warnings.filterwarnings("ignore")
+
+
     """Register user"""
     if request.method == "POST":
         username = request.form.get("username")
@@ -148,6 +168,9 @@ def register():
 
 @app.route("/check/<username>", methods=["GET"])
 def check(username):
+    warnings.filterwarnings("ignore")
+
+
     """Return true if username available, else false, in JSON format"""
 
     print(username)
@@ -161,6 +184,9 @@ def check(username):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    warnings.filterwarnings("ignore")
+
+
     """Log user in"""
 
     # Forget any user_id
@@ -210,6 +236,10 @@ def logout():
 @app.route("/modify", methods=["GET", "POST"])
 @login_required
 def modify():
+    
+    warnings.filterwarnings("ignore")
+
+
     """modify one record """
 
 
@@ -218,6 +248,10 @@ def modify():
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
+    
+    warnings.filterwarnings("ignore")
+
+
     """Sell shares of stock"""
 
     if request.method == "POST":
@@ -291,6 +325,9 @@ def sell():
 @app.route("/change_password", methods=["GET", "POST"])
 @login_required
 def change_password():
+    warnings.filterwarnings("ignore")
+
+
 
     if request.method == "POST":
 
@@ -350,6 +387,8 @@ class Claim(db2.Model):
     damage = db2.Column("damage", db2.String(255))
     comment = db2.Column("comment", db2.String(2040))
 
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
 
-# crete the tables (based on the classes)
-db2.create_all()
+    # crete the tables (based on the classes)
+    db2.create_all()
