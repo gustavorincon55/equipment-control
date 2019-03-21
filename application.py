@@ -65,7 +65,7 @@ def index():
         warnings.simplefilter("ignore")
 
         return render_template("claims.html", claims = Claim.query.all())
-        return render_template("index.html")
+        # return render_template("index.html")
 
 
 @app.route("/add_claim", methods=["GET","POST"])
@@ -387,8 +387,6 @@ class Claim(db2.Model):
     damage = db2.Column("damage", db2.String(255))
     comment = db2.Column("comment", db2.String(2040))
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
 
-    # crete the tables (based on the classes)
-    db2.create_all()
+# crete the tables (based on the classes)
+db2.create_all()
