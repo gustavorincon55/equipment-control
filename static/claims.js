@@ -10,7 +10,7 @@ function addListeners(rows) {
 		if (rowN == 0) {continue;}
 
 		rows[rowN].addEventListener("dblclick", function() {
-			editable(rows[rowN], rows, rowN);
+			editable(this);
 		});
 
 		rows[rowN].addEventListener("input", function() {
@@ -21,14 +21,13 @@ function addListeners(rows) {
 
 		rows[rowN].addEventListener("blur", function() {
 
-			console.log('blur',this);
-
 			if (isChanged == true) {
 
-				updateDataBase(this);
 				isChanged = false;
-				console.log("updated?")
+				return updateDataBase(this);
 			}
+
+			return endEdit(this);
 
 		});
 
@@ -43,21 +42,23 @@ function addListeners(rows) {
 }
 
 // function called after a double click on a row
+function editable(row) {
 
-function editable(row, rows, rowN) {
-
-	for(let rowN in rows) {
-		rows[rowN].contentEditable = false;
-		if (rows[rowN].className != undefined) {
-			rows[rowN].classList.remove("editable-row");
-		}
+	if(row.contentEditable == true) {
+		return ""
 	}
-
-
+	
 	row.contentEditable = true;
 	row.classList.add("editable-row");
+}
 
+function endEdit(row) {
 
+	if (row.className != undefined) {
+		row.classList.remove("editable-row");
+	}
+	
+	return row.contentEditable = false;
 }
 
 function updateDataBase(row) {
@@ -69,8 +70,7 @@ function updateDataBase(row) {
 	xhttp.onreadystatechange = function() {
 		if(this.readyState == 4) {
 			console.log(this.responseText);
-			console.log('ready');
-
+			endEdit(row);
 		}
 	};
 }
@@ -100,6 +100,18 @@ function getRowData(row) {
 
 	return data;
 }
+
+
+function saveAll() {
+	rows = document.querySelectorAll("tr");
+
+	for(let rowN in rows) {
+		if(rowN == 0) { continue;}
+
+		updateDataBase(rows[rowN]);
+
+	}
+};
 
 //
 

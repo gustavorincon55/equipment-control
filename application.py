@@ -135,6 +135,8 @@ def update_claim(row):
 
     print("\n claim updated \n")
     return "claim updated."
+    
+##################################
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -231,18 +233,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
-
-@app.route("/modify", methods=["GET", "POST"])
-@login_required
-def modify():
-    
-    warnings.filterwarnings("ignore")
-
-
-    """modify one record """
-
-
 
 
 @app.route("/sell", methods=["GET", "POST"])
