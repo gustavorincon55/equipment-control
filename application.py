@@ -90,6 +90,29 @@ def add_claim():
 
     return render_template("add_claim.html")
 
+@app.route("/add_file", methods=["GET","POST"])
+@login_required
+def add_file():
+    warnings.filterwarnings("ignore")
+
+    if request.method == "POST":
+        '''
+        claim = Claim( unit=request.form.get("unit"), customer=request.form.get("customer"), bl=request.form.get("bl"),
+         charge=request.form.get("charge"), date=request.form.get("date"),  status=request.form.get("status"), invoice = request.form.get("invoice"),
+          attachements=request.form.get("attachements"), damage=request.form.get("damage"), comment=request.form.get("comment"))
+
+        db2.session.add(claim)
+
+
+        # Check if there where no errors?
+        if db2.session.commit() == None:
+            print("claim")
+            flash("Claim submited.")
+            return redirect("/claims")
+        '''
+    ###########################################
+    print("add_file working at least")
+    return "At least the server got it."
 
 @app.route("/claims")
 @login_required
@@ -101,6 +124,18 @@ def display_claims():
     """
 
     return render_template("claims.html", claims=Claim.query.all())
+
+@app.route("/erase_claim/<claim_id>", methods=["GET"])
+@login_required
+def erase_claim(claim_id):
+    _claim = Claim.query.get(claim_id)
+    
+    print('\n',_claim, '\n')
+    print('erase_claim working')
+    db2.session.delete(_claim)
+    db2.session.commit()
+    return "deleted"
+
 
 @app.route("/update_claim/<row>", methods=["GET"])
 @login_required
@@ -117,6 +152,13 @@ def update_claim(row):
         new_data[param[0]] = param[1]
 
     print(new_data)
+
+    amount_of_data = 0
+    for data in new_data:
+        amount_of_data += len(data)
+
+    if amount_of_data is 0:
+        print("\n Empty row \n")
 
     old_data = Claim.query.get(new_data['id'])
 
@@ -136,7 +178,6 @@ def update_claim(row):
     print("\n claim updated \n")
     return "claim updated."
     
-##################################
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -366,8 +407,8 @@ for code in default_exceptions:
 
 class Claim(db2.Model):
     id = db2.Column(db2.Integer, primary_key = True)
-    unit = db2.Column("unit", db2.String(255), nullable=True)
-    customer = db2.Column("customer", db2.String(255), nullable=True)
+    unit = db2.Column("unit", db2.String(255))
+    customer = db2.Column("customer", db2.String(255))
     bl = db2.Column("BL", db2.String(255))
     charge = db2.Column("charge", db2.String(255))
     invoice = db2.Column("invoice", db2.Integer)
@@ -377,6 +418,13 @@ class Claim(db2.Model):
     damage = db2.Column("damage", db2.String(255))
     comment = db2.Column("comment", db2.String(2040))
 
+    files = db2.relationship('Claim_file', backref='claim')
+
+class Claim_file(db2.Model):
+    id = db2.Column(db2.Integer, primary_key= True)
+    file_name = db2.Column(db2.String(255))
+    date_attached = db2.Column(db2.String(255))
+    claim_id = db2.Column(db2.Integer, db2.ForeignKey('claim.id'))
 
 # crete the tables (based on the classes)
 db2.create_all()

@@ -65,3 +65,14 @@ main img
 @KeyFrames editable {
     to { border: 2px solid  #e6b800; }
 }
+
+.no-show
+{
+    display:none;
+}
+
+[type="file"] 
+{
+    width: 0.1px;
+    overflow: hidden;
+}

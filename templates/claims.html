@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
 
 {% block nav %}
-	<li class="nav-item"><a class="nav-link" onclick="saveAll()" href="#">Save all</a></li>
+<li class="nav-item"><a class="nav-link" onclick="saveAll()" href="#">Save all</a></li>
+<li class="nav-item"><a class="nav-link" onclick="addFile()" href="#">Add file</a></li>
+{% endblock %}
+
+{% block nav2 %}
+	<li class="nav-item"><a class="nav-link" onclick="confirmClaimDelete()" href="#">Delete claim</a></li>
 {% endblock %}
 
 
@@ -11,8 +16,8 @@
 
 {% block main %}
 
-<div style="margin=auto max-width:100%;" class="container-fluid overflow-auto">
-	<table class="table table-bordered table-striped claims-table" style="min-width: 90%;">
+<div style="margin:auto; max-width:100%;" class="container-fluid overflow-auto">
+	<table id="main-table" class="table table-bordered table-striped claims-table" style="min-width: 90%;">
 		<tr class="thead-dark" classcontenteditable="false">
 			<th scope="col" >Unit</th>
 			<th scope="col" >Customer</th>
@@ -69,7 +74,17 @@
 			</td>
 			<td class="align-baseline" meaning="attachements">
 				<div class="claim-cell" style="">
+
 					{{ claim.attachements }}
+					<div class="btn-group btn-group-toggle">
+						<label class="btn btn-secondary">
+							<input type="file" name="claim_file" onchange="sendFileToServer(this.files)">+
+						</label>
+						<label class="btn btn-secondary">
+							
+						</label>
+					</div>
+
 				</div>
 			</td>
 			<td class="align-baseline" meaning="damage">
@@ -92,3 +107,5 @@
 {% block js %}
 <script src="/static/claims.js"></script>
 {% endblock %}
+
+

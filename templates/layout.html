@@ -40,6 +40,8 @@
 
                     </ul>
                     <ul class="navbar-nav ml-auto mt-2">
+                        {% block nav2 %}{% endblock %}
+
                         <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
                     </ul>
                 {% else %}
@@ -51,13 +53,14 @@
             </div>
         </nav>
 
+        <header>
         {% if get_flashed_messages() %}
-            <header>
-                <div class="alert alert-primary border text-center" role="alert">
+                <div class="alert alert-success alert-dismissible text-center" role="alert">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
                     {{ get_flashed_messages() | join(" ") }}
                 </div>
-            </header>
         {% endif %}
+        </header>
 
         <main class="container-fluid p-3">
             {% block main %}{% endblock %}
