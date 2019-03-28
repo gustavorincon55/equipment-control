@@ -75,15 +75,17 @@
 			<td class="align-baseline" meaning="attachements">
 				<div class="claim-cell" style="">
 
-					{{ claim.attachements }}
+				<!--{{ claim.attachements }} -->
+				<form action="/add_file" method="POST" enctype="multipart/form-data">
 					<div class="btn-group btn-group-toggle">
 						<label class="btn btn-secondary">
-							<input type="file" name="claim_file" onchange="sendFileToServer(this.files)">+
+							<input type="file" name="claim_file" onchange="sendFileToServer(this.parentNode.parentNode.parentNode)">+
 						</label>
 						<label class="btn btn-secondary">
 							
 						</label>
 					</div>
+				</form>
 
 				</div>
 			</td>

@@ -90,29 +90,6 @@ def add_claim():
 
     return render_template("add_claim.html")
 
-@app.route("/add_file", methods=["GET","POST"])
-@login_required
-def add_file():
-    warnings.filterwarnings("ignore")
-
-    if request.method == "POST":
-        '''
-        claim = Claim( unit=request.form.get("unit"), customer=request.form.get("customer"), bl=request.form.get("bl"),
-         charge=request.form.get("charge"), date=request.form.get("date"),  status=request.form.get("status"), invoice = request.form.get("invoice"),
-          attachements=request.form.get("attachements"), damage=request.form.get("damage"), comment=request.form.get("comment"))
-
-        db2.session.add(claim)
-
-
-        # Check if there where no errors?
-        if db2.session.commit() == None:
-            print("claim")
-            flash("Claim submited.")
-            return redirect("/claims")
-        '''
-    ###########################################
-    print("add_file working at least")
-    return "At least the server got it."
 
 @app.route("/claims")
 @login_required
@@ -387,6 +364,41 @@ def change_password():
     return render_template("change_password.html")
 
 
+@app.route("/add_file", methods=["GET","POST"])
+@login_required
+def add_file():
+    warnings.filterwarnings("ignore")
+
+    print('working?')
+
+    '''
+    if request.method == "POS    print('working?')
+T":
+        
+        File = Claim_file( file_name = , date_attached=, claim_id=, file=request.files['claim_file'])
+
+        db2.session.add(claim)
+
+
+        # Check if there where no errors?
+        if db2.session.commit() == None:
+            print("claim")
+            flash("Claim submited.")
+            return redirect("/claims")
+    '''
+    ###########################################
+    new_file = request.files['claim_file']
+
+    db_file = Claim_file(file_name=new_file.filename, claim_id=1, date_attached="1-1-1", data=new_file.read())
+
+    db2.session.add(db_file)
+
+    db2.session.commit()
+    
+    print(new_file)
+
+    return 'saved to the database \n' + new_file.filename
+
 
 def errorhandler(e):
     """Handle error"""
@@ -422,6 +434,7 @@ class Claim(db2.Model):
 
 class Claim_file(db2.Model):
     id = db2.Column(db2.Integer, primary_key= True)
+    data = db2.Column(db2.LargeBinary)
     file_name = db2.Column(db2.String(255))
     date_attached = db2.Column(db2.String(255))
     claim_id = db2.Column(db2.Integer, db2.ForeignKey('claim.id'))

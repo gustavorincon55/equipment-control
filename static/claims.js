@@ -27,8 +27,6 @@ function addListeners(rows) {
 			isChanged = true;
 		});
 
-		console.log('line 108');
-
 		rows[rowN].addEventListener("blur", function() {
 
 			if (isChanged == true) {
@@ -258,15 +256,14 @@ function confirmClaimDelete() {
 
 }
 
-function sendFileToServer(files) {
-	//alert("Work in progress");
-	let file = files[0];
+function sendFileToServer(form) {
+	
+	let file = form.children[0].children[0].children[0]
 
+	console.log(form)
 	console.log(file)
 
-	let formData = new FormData();
-
-	formData.append("file", file, file.name);
+	let formData = new FormData(form);
 
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("POST", "/add_file");
