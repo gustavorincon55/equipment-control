@@ -1,11 +1,11 @@
 import os
 
 import warnings
-from cs50 import SQL
+#from cs50 import SQL
 
 from flask_sqlalchemy import SQLAlchemy
 
-from flask import Flask, flash, jsonify, redirect, render_template, request, session
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, send_file
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -14,6 +14,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from helpers import apology, login_required, lookup, usd
 
 import datetime
+from io import BytesIO
 
 # Configure application
 app = Flask(__name__)
@@ -41,16 +42,16 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # test to see if the session can be prolongue
-app.config["PERMANENT_SESSION_LIFETIME"] = 1000;
+app.config["PERMANENT_SESSION_LIFETIME"] = 1000
 #
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+#db = SQL("sqlite:///finance.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///control.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config['SQLALCHEMY_ECHO'] = True
 
-db2 = SQLAlchemy(app)
+db = SQLAlchemy(app)
 
 warnings.filterwarnings("ignore")
 
@@ -58,14 +59,9 @@ warnings.filterwarnings("ignore")
 @login_required
 def index():
     warnings.filterwarnings("ignore")
-
-    """Make the user select which app to use"""
-    # avoid annoying deprecation warning
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-
-        return render_template("claims.html", claims = Claim.query.all())
-        # return render_template("index.html")
+        
+    return redirect("/claims")
+    # return render_template("index.html")
 
 
 @app.route("/add_claim", methods=["GET","POST"])
@@ -76,19 +72,23 @@ def add_claim():
     if request.method == "POST":
 
         claim = Claim( unit=request.form.get("unit"), customer=request.form.get("customer"), bl=request.form.get("bl"),
-         charge=request.form.get("charge"), date=request.form.get("date"),  status=request.form.get("status"), invoice = request.form.get("invoice"),
-          attachements=request.form.get("attachements"), damage=request.form.get("damage"), comment=request.form.get("comment"))
+        charge=usd(request.form.get("charge")), date=request.form.get("date"),invoice = request.form.get("invoice"), status="Open",
+        damage=request.form.get("damage"), comment=request.form.get("comment"), country = request.form.get("country"))
 
-        db2.session.add(claim)
+        db.session.add(claim)
 
 
         # Check if there where no errors?
-        if db2.session.commit() == None:
+        if db.session.commit() == None:
             print("claim")
             flash("Claim submited.")
             return redirect("/claims")
 
-    return render_template("add_claim.html")
+    today = datetime.date.today()
+
+    today = str(today.month)+ "/" + str(today.day) + "/" + str(today.year)
+
+    return render_template("add_claim.html", date = today)
 
 
 @app.route("/claims")
@@ -100,32 +100,75 @@ def display_claims():
     Display all the damage records
     """
 
-    return render_template("claims.html", claims=Claim.query.all())
+    claims = Claim.query.all()
+
+    for claim in claims:
+        claim.files.length = len(claim.files)
+
+            
+    return render_template("claims.html", claims = claims, country= "")
+
+@app.route("/claims/<country>")
+@login_required
+def display_claims_by_country(country):
+
+    warnings.filterwarnings("ignore")
+
+    """
+    Display all the damage records by country
+    """
+
+    claims = Claim.query.filter_by(country=country)
+
+    for claim in claims:
+        claim.files.length = len(claim.files)
+
+    if country == 'us':
+        return render_template("claims.html", claims = claims, us='active', country="us")
+
+    if country == 'dr':
+        return render_template("claims.html", claims = claims, dr='active', country="dr")
+    
+    if country == 'haiti':
+        return render_template("claims.html", claims = claims, haiti='active', country="us")
+    
+    return redirect("/claims")
+
 
 @app.route("/erase_claim/<claim_id>", methods=["GET"])
 @login_required
 def erase_claim(claim_id):
-    _claim = Claim.query.get(claim_id)
+    warnings.filterwarnings("ignore")
+
+    try:
+        _claim = Claim.query.get(claim_id)
+    except:
+        return "Error. Claim not faund"
     
-    print('\n',_claim, '\n')
-    print('erase_claim working')
-    db2.session.delete(_claim)
-    db2.session.commit()
+    db.session.delete(_claim)
+    db.session.commit()
     return "deleted"
 
 
-@app.route("/update_claim/<row>", methods=["GET"])
+@app.route("/update_claim/<row>", methods=["GET"], strict_slashes=False)
 @login_required
 def update_claim(row):
     warnings.filterwarnings("ignore")
 
     print("\nupdate_claim working\n")
+    
+    # transforming the slashes
+    if len(row.split("-slash-")) > 1:
+        row = row.split("-slash-")
+        row = "/".join(row)
+    
     row = row.split("@@")
 
     new_data = dict()
 
     for value in row:
         param = value.split("=")
+        print(param)
         new_data[param[0]] = param[1]
 
     print(new_data)
@@ -146,15 +189,76 @@ def update_claim(row):
     old_data.invoice = new_data['invoice']
     old_data.date = new_data['date']
     old_data.status = new_data['status']
-    old_data.attachements = new_data['attachements']
     old_data.damage = new_data['damage']
     old_data.comment = new_data['comment']
 
-    db2.session.commit()
+    db.session.commit()
 
     print("\n claim updated \n")
     return "claim updated."
+
+
+@app.route("/add_file", methods=["GET","POST"])
+@login_required
+def add_file():
+    warnings.filterwarnings("ignore")
     
+    if request.method == "POST":
+        ###########################################
+        try:
+            new_file = request.files['claim_file']
+            claim_id = request.form.get("claim_id")
+        except:
+            return "an error ocurred. File not saved."
+
+        db_file = Claim_file(file_name=new_file.filename, claim_id=claim_id, date_attached= datetime.datetime.now(), data=new_file.read())
+
+        db.session.add(db_file)
+
+        db.session.commit()
+        
+        print(new_file)
+
+        return 'saved to the database \n' + new_file.filename
+    
+    return redirect("/")
+
+@app.route("/download_file/<file_id>/<claim_id>", methods=["GET","POST"])
+@login_required
+def download_file(file_id, claim_id):
+    warnings.filterwarnings("ignore")
+    
+    ###########################################
+    '''
+    try:
+        _file = Claim_file.query.filter_by(id=file_id, claim_id=claim_id).first()
+        print(_file)
+    except:
+        return "an error ocurred. File not found."
+    '''
+    _file = Claim_file.query.filter_by(id=file_id, claim_id=claim_id).first()
+
+    return send_file(BytesIO(_file.data), attachment_filename=_file.file_name, as_attachment=True)
+
+@app.route("/delete_file/<file_id>/<claim_id>", methods=["GET"])
+@login_required
+def delete_file(file_id, claim_id):
+    warnings.filterwarnings("ignore")
+
+    try:
+        _file = Claim_file.query.filter_by(claim_id = claim_id, id = file_id).first()
+    except:
+        return "Error. File not faund"
+    
+
+    print('\n start',_file, '\n\n')
+
+    db.session.delete(_file)
+
+    db.session.commit()
+    
+    return "deleted"
+
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -163,44 +267,63 @@ def register():
 
     """Register user"""
     if request.method == "POST":
+        print("post")
+
         username = request.form.get("username")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
 
         if username == "":
-            return apology("You must provide an username")
+            flash("You must provide an username")
+            return redirect("/")
         if password == "":
-            return apology("You must provide a password")
+            flash("You must provide a password")
+            return redirect("/")
+
         elif confirmation != password:
-            return apology("Both passwords must be equal.")
+            flash("Both passwords must be equal.")
+            return redirect("/")
 
-        checker = db.execute('SELECT * FROM users where username == :username', username = username)
 
-        if len(checker) > 0:
-            return apology("Sorry, username is not available.")
+        checker = User.query.filter_by(username = username).first()
 
-        result = db.execute("INSERT INTO users(username, hash, cash) VALUES(:name, :hashedP, :cash)",
-        name=username,hashedP=generate_password_hash(password),cash=20000)
+        try: 
+            print(checker.username, "user name exist")
+            flash("username exist")
+            redirect("/register")
+        except:
+            print('\nusername does not exist\n')
 
+
+        result = User(username = username, hash = generate_password_hash(password))
+
+        db.session.add(result)
+
+        db.session.commit()
+
+        flash("The registration was successfull.")
         return redirect("/")
 
+    print("get")
     return render_template("register.html")
 
 @app.route("/check/<username>", methods=["GET"])
 def check(username):
     warnings.filterwarnings("ignore")
 
-
     """Return true if username available, else false, in JSON format"""
 
     print(username)
-    result = db.execute("SELECT * FROM users WHERE username == :username", username = username)
+
+    result = User.query.filter_by(username = username).first()
 
     # return false if the user exist. True otherwise.
-    if len(result) > 0:
+    try:
+        print('\n',result.username, '\n\n username exists \n\n' )
         return jsonify(False)
+    except:
+        return jsonify(True)
 
-    return jsonify(True)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -217,22 +340,28 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            flash("must provide username", 403)
+            return redirect("/")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            flash("must provide password", 403)
+            return redirect("/")
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = :username",
-                          username=request.form.get("username"))
+        user = User.query.filter_by(username = request.form.get("username")).first()
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+        try:
+            if not check_password_hash(user.hash, request.form.get("password")):
+                flash("invalid username and/or password")
+                return redirect("/")
+        except:
+            flash("invalid username and/or password")
+            return redirect("/")
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = user.id
 
         # Redirect user to home page
         return redirect("/")
@@ -241,6 +370,42 @@ def login():
     else:
         return render_template("login.html")
 
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+
+    warnings.filterwarnings("ignore")
+
+    print("something?")
+
+    if request.method == "POST":
+        # check if current password is correct
+
+        current_password = request.form.get("current-password")
+        new_password = request.form.get("password")
+
+        old_hash = User.query.filter_by(id = session["user_id"]).first()
+
+        try:
+            old_hash = old_hash.hash
+        except:
+            flash("user doesn't exist")
+            redirect("/")
+        
+
+        if check_password_hash(old_hash, current_password):
+
+            # update password in the database
+            result = User.query.filter_by(id = session["user_id"]).first()
+
+            result.hash = generate_password_hash(new_password)
+
+            db.session.commit()
+
+        flash("Your password has been changed correctly.")
+        return redirect("/")
+
+    return render_template("change_password.html")
 
 @app.route("/logout")
 def logout():
@@ -251,153 +416,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
-
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
-def sell():
-    
-    warnings.filterwarnings("ignore")
-
-
-    """Sell shares of stock"""
-
-    if request.method == "POST":
-        symbol_to_sell = request.form.get("symbol")
-        # check if the user wrote a valid number of shares
-        try:
-            shares_to_sell = int(request.form.get("shares"))
-
-        except:
-            flash("Sorry, you need to write how many stocks you want to buy.")
-            return redirect("/sell")
-
-
-        stocks = db.execute('SELECT "company_name","symbol", SUM("shares") "shares" FROM "trans" WHERE userId == :userId  AND symbol == :symbol_to_sell  GROUP BY "company_name"',
-        userId = session["user_id"], symbol_to_sell = symbol_to_sell)
-
-        # if nothing was returned from the query it means the user doesn't have stocks on that company.
-        try:
-            shares_owned = stocks[0]["shares"]
-        except:
-            flash("Sorry, you don't have shares on that company.")
-            return redirect("/sell")
-
-        # check if the user can sell that many stocks
-        if shares_owned < shares_to_sell:
-            flash("Sorry, you don't have that many shares.")
-            return redirect("/sell")
-
-        stock = lookup(symbol_to_sell)
-
-
-        # update trans with a sell transaction
-        trans = db.execute("INSERT INTO trans(company_name, userId, symbol, price, shares, total, datetime, _type) VALUES(:company_name,:userId, :symbol, :price, :shares, :total, :datetime, :_type)", company_name = stock["name"],
-        userId=session["user_id"], symbol = symbol_to_sell, price = stock["price"], shares = -shares_to_sell, total = stock["price"] * -shares_to_sell, datetime = datetime.datetime.now(), _type = "sell")
-
-        # print(trans)
-
-        users = db.execute('select "cash" FROM "users" WHERE "id"==:id',id=session["user_id"])
-
-        cash = users[0]["cash"]
-
-        # print(cash)
-
-        cash = cash + (stock["price"] * shares_to_sell)
-
-        users = db.execute('UPDATE "users" SET "cash" = :cash WHERE "id"==:id',id=session["user_id"], cash = cash)
-
-        flash("You succesfully made the sell")
-        return redirect("/")
-
-
-    stocks = db.execute('SELECT "company_name","symbol", SUM("shares") "shares" FROM "trans" WHERE userId == :userId GROUP BY "company_name"', userId = session["user_id"])
-
-    # make a list of the stocks that have cero shares
-    index = 0
-    cero_shares = []
-    for stock in stocks:
-        if stock["shares"] == 0:
-            cero_shares.append(index)
-        index += 1
-
-    # erase the stocks that have cero shares (first sort the list to avoid index-out-of-range errors)
-    cero_shares.sort(reverse= True)
-    for index in cero_shares:
-        del stocks[index]
-
-    return render_template("sell.html", stocks = stocks)
-
-
-
-@app.route("/change_password", methods=["GET", "POST"])
-@login_required
-def change_password():
-    warnings.filterwarnings("ignore")
-
-
-
-    if request.method == "POST":
-
-        # check if current password is correct
-
-        current_password = request.form.get("current-password")
-        new_password = request.form.get("password")
-
-        old_hash = db.execute('SELECT "hash" FROM users WHERE id == :id', id = session["user_id"])
-
-        old_hash = old_hash[0]["hash"]
-        # print(old_hash)
-        if check_password_hash(old_hash, current_password):
-
-            # update password in the database
-            result = db.execute("UPDATE users SET hash = :new_hash WHERE id == :id", id = session['user_id'], new_hash = generate_password_hash(new_password) )
-
-            # print(result)
-
-
-
-
-        flash("Your password has been changed correctly.")
-        return redirect("/")
-
-    return render_template("change_password.html")
-
-
-@app.route("/add_file", methods=["GET","POST"])
-@login_required
-def add_file():
-    warnings.filterwarnings("ignore")
-
-    print('working?')
-
-    '''
-    if request.method == "POS    print('working?')
-T":
-        
-        File = Claim_file( file_name = , date_attached=, claim_id=, file=request.files['claim_file'])
-
-        db2.session.add(claim)
-
-
-        # Check if there where no errors?
-        if db2.session.commit() == None:
-            print("claim")
-            flash("Claim submited.")
-            return redirect("/claims")
-    '''
-    ###########################################
-    new_file = request.files['claim_file']
-
-    db_file = Claim_file(file_name=new_file.filename, claim_id=1, date_attached="1-1-1", data=new_file.read())
-
-    db2.session.add(db_file)
-
-    db2.session.commit()
-    
-    print(new_file)
-
-    return 'saved to the database \n' + new_file.filename
 
 
 def errorhandler(e):
@@ -417,27 +435,32 @@ for code in default_exceptions:
 
 # classes to use for tables
 
-class Claim(db2.Model):
-    id = db2.Column(db2.Integer, primary_key = True)
-    unit = db2.Column("unit", db2.String(255))
-    customer = db2.Column("customer", db2.String(255))
-    bl = db2.Column("BL", db2.String(255))
-    charge = db2.Column("charge", db2.String(255))
-    invoice = db2.Column("invoice", db2.Integer)
-    date = db2.Column("date", db2.String(100))
-    status = db2.Column("status", db2.String(100))
-    attachements = db2.Column("attachements", db2.String(100))
-    damage = db2.Column("damage", db2.String(255))
-    comment = db2.Column("comment", db2.String(2040))
+class Claim(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    unit = db.Column("unit", db.String(255))
+    customer = db.Column("customer", db.String(255))
+    bl = db.Column("BL", db.String(255))
+    charge = db.Column("charge", db.String(255))
+    invoice = db.Column("invoice", db.Integer)
+    date = db.Column("date", db.String(100))
+    status = db.Column("status", db.String(100))
+    damage = db.Column("damage", db.String(255))
+    comment = db.Column("comment", db.String(2040))
 
-    files = db2.relationship('Claim_file', backref='claim')
+    country = db.Column("country", db.String(255))
+    files = db.relationship('Claim_file', backref='claim')
 
-class Claim_file(db2.Model):
-    id = db2.Column(db2.Integer, primary_key= True)
-    data = db2.Column(db2.LargeBinary)
-    file_name = db2.Column(db2.String(255))
-    date_attached = db2.Column(db2.String(255))
-    claim_id = db2.Column(db2.Integer, db2.ForeignKey('claim.id'))
+class Claim_file(db.Model):
+    id = db.Column(db.Integer, primary_key= True)
+    data = db.Column(db.LargeBinary)
+    file_name = db.Column(db.String(255))
+    date_attached = db.Column(db.String(255))
+    claim_id = db.Column(db.Integer, db.ForeignKey('claim.id'))
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key= True)
+    username = db.Column(db.String(510))
+    hash = db.Column(db.String(1012))
 
 # crete the tables (based on the classes)
-db2.create_all()
+db.create_all()

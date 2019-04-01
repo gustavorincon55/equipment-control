@@ -1,60 +1,66 @@
 
-addListeners(document.querySelectorAll("tr"));
+//document.onload = 
+
+addListeners(document.querySelectorAll("tr"))
+console.log("loaded");
+
 
 // add listener to all rows
 function addListeners(rows) {
 	let isChanged = false;
-	for(let rowN in rows) {
+
+	for(let row of rows) {
 
 		// don't mess with the header
-		if (rowN == 0) {continue;}
+		if(row.getAttribute("scope") == "row") { 
 
-		for(let _td of rows[rowN].children) {
+
+
+		for(let _td of row.children) {
 			_td.addEventListener("dblclick", function() {
-				editable(rows[rowN]);
+				makeRowEditable(row);
 				//_td.parentElement.focus();
 			});
 			/*_td.children[0].addEventListener("dblclick", function() {
-				editable(rows[rowN]);
+				makeRoweditable(row);
 			});*/
 		}
 
-		rows[rowN].addEventListener("dblclick", function() {
-			editable(this);
+		/*row.addEventListener("dblclick", function() {
+			makeRowEditable(this);
 		});
+		*/
 
-		rows[rowN].addEventListener("input", function() {
+		row.addEventListener("input", function() {
 			isChanged = true;
 		});
 
-		rows[rowN].addEventListener("blur", function() {
+		/*
+		row.addEventListener("blur", function() {
 
 			if (isChanged == true) {
 
 				isChanged = false;
-				return updateClaimTable(this);
+				return updateClaimTable(row);
 			}
 
 			return endEdit(this);
 
 		});
-
-		/*
-		// take away the div when the cell is empty
-		for (let td of rows[rowN].children) {
-			if(td.innerText.length <= 2) {
-				td.removeChild(td.children[0]);
-			}
-		}
 		*/
+
+		row.querySelector('[type = file]').addEventListener("change", function() {
+			sendFileToServer(this.parentNode.parentNode.parentNode)
+		} )
+	}
 	}
 }
 
 // function called after a double click on a row
-function editable(row) {
+function makeRowEditable(row) {
 
 	if(row.contentEditable == true) {
-		return 
+		return "";
 	}
 	
 	row.contentEditable = true;
@@ -79,24 +85,35 @@ function updateClaimTable(row) {
 	xhttp.onreadystatechange = function() {
 		if(this.readyState == 4) {
 			console.log(this.responseText);
-			endEdit(row);
+			return endEdit(row);
 		}
 	};
 }
 
 function joinRowData(row) {
-	let data = "";
 
-	data += "id=" + row.getAttribute("table-id") + "@@";
+	let data = "";
+	let country = document.querySelector("[country]");
+
+	data += "id=" + row.getAttribute("claim_id") + "@@";
+	data += "country=" + country.getAttribute("country") + '@@';
 	//let tr = row.children;
 	// get the data from the row and make an object.
-	let order = ['unit', 'customer', 'bl', 'charge', 'invoice', 'date', 'status', 'attachements', 'damage', 'comment'];
+	let order = ['unit', 'customer', 'bl', 'charge', 'invoice', 'date', 'status', 'attachements','damage', 'comment'];
 	let orderI = 0;
 
 	if(row.children.length == 10) {
 		for(let td of row.children) {
+
+			// cancell any "/". because it breaks the server on the url
+			let text = td.innerText;
+
+			if(text.split("/").length > 1) {
+				text = text.split("/").join("-slash-");
+			}
+
 			data += order[orderI] + "=";
-			data += td.innerText;
+			data += text;
 
 			//skip putting a @@ as the last item.
 			if(orderI === order.length - 1) {break;}
@@ -112,21 +129,22 @@ function joinRowData(row) {
 
 
 function saveAll() {
+
 	rows = document.querySelectorAll("tr");
 
-	for(let rowN in rows) {
-		if(rowN == 0) { continue;}
-
-		updateClaimTable(rows[rowN]);
-
+	for(let row of rows) {
+		if(row.getAttribute("scope") == "row") { 
+			updateClaimTable(row);
+		}
 	}
+	 console.log('saveAll ended');
 };
 
 function deleteClaim(claimId) {
 
 	let header = document.querySelector("header");
 	let table = document.querySelector("main tbody");
-	let htmlRow = document.querySelector(`main [table-id='${claimId}']`);
+	let htmlRow = document.querySelector(`main [claim_id='${claimId}']`);
 
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("GET", "/erase_claim/" + claimId, true);
@@ -158,7 +176,7 @@ function confirmClaimDelete() {
 
 	row = rows[0];
 
-	let claimId = row.getAttribute("table-id");
+	let claimId = row.getAttribute("claim_id");
 
 	//turn the row into an object
 
@@ -257,13 +275,12 @@ function confirmClaimDelete() {
 }
 
 function sendFileToServer(form) {
+	console.log(form);
+	let file = form.children[0].children[0].children[0];
+	let claim_id = form.getAttribute("claim_id");
 	
-	let file = form.children[0].children[0].children[0]
-
-	console.log(form)
-	console.log(file)
-
 	let formData = new FormData(form);
+	formData.append("claim_id", claim_id);
 
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("POST", "/add_file");
@@ -272,12 +289,83 @@ function sendFileToServer(form) {
 		if(this.readyState == 4) {
 			alert(this.responseText)
 			console.log(this.response)
-	   }
-	}
+			//location.reload()
+		}
+	};
 
 
 }
 
-//
+function getFileFromServer(file_data) {
 
+	claim_id = file_data.getAttribute("claim_id");
+	file_id = file_data.getAttribute("file_id");
 
+	console.log(claim_id,file_id)
+	let request = new XMLHttpRequest()
+
+	request.open("GET", "/download_file/" + file_id +"/" + claim_id);
+	request.send();
+	request.onreadystatechange = function() {
+		console.log(this.response)
+	}
+}
+
+function deleteFileMode(modal_body) {
+
+	console.log(modal_body)
+
+	files = modal_body.querySelectorAll("a");
+	
+	for(let file of files) {
+	
+		file.className += " delete_file_mode";
+
+		
+		fileId = file.getAttribute("file_id");
+		claimId = file.getAttribute("claim_id");
+		console.log(fileId,claimId,"\n")
+
+		file.addEventListener("click", function(event) {
+			event.preventDefault();
+			deleteFile(this);
+		})
+	}
+	modal_header = modal_body.parentNode.children[0];
+	console.log(modal_header)
+	modal_header.innerHTML = '<h5 class="m-auto">CLICK TO ERASE</h5>'
+
+	modal_footer = modal_body.parentNode.children[2];
+	modal_footer.innerHTML = 
+	`
+	<label type="button" class="btn btn-secondary m-auto" onclick="location.reload()" >
+		Done
+	</label>
+	`
+	
+}
+
+function deleteFile(fileHtml) {
+	fileId = fileHtml.getAttribute("file_id");
+	claimId = fileHtml.getAttribute("claim_id");
+	modal_body = fileHtml.parentNode;
+	console.log(fileHtml);
+	console.log(fileId,claimId,'\n\n');
+
+	let request = new XMLHttpRequest();
+	request.open("GET",`/delete_file/${fileId}/${claimId}`)
+	request.send()
+	request.onreadystatechange = function(){
+		if(this.readyState == 4) {
+			if(this.response == "deleted") {
+				modal_body.removeChild(fileHtml);
+			}
+			console.log(this.response)
+			buttonAndCounter = document.querySelectorAll(`.buttonAndCounter${claimId}`)[0];
+			console.log(buttonAndCounter);
+			buttonAndCounter.innerHTML = parseInt(buttonAndCounter.innerHTML) - 1;
+			console.log(buttonAndCounter);
+
+		}
+	}
+}

@@ -34,8 +34,7 @@
             <div class="collapse navbar-collapse" id="navbar">
                 {% if session.user_id %}
                     <ul class="navbar-nav mr-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/claims">Claims</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/add_claim">Add claim</a></li>
+                        <!--<li class="nav-item"><a class="nav-link" href="/claims">Claims</a></li>-->
                         {% block nav %}{% endblock %}
 
                     </ul>
@@ -66,10 +65,13 @@
             {% block main %}{% endblock %}
         </main>
 
+        {% if session.user_id %}
+
         <footer class="small text-center text-muted m-3">
             <br><a href="/change_password">Want to change your password?</a>
         </footer>
-
+        {% endif %}
+        
         {% block js %}{% endblock %}
 
 

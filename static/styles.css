@@ -73,6 +73,35 @@ main img
 
 [type="file"] 
 {
-    width: 0.1px;
+    width: 0px;
     overflow: hidden;
+}
+
+.modal_file
+{
+    width: 90%;
+    color: black;
+    margin: 0.5em;
+}
+
+.modal_file:hover
+{
+    background-color: #7e9194;
+    color: black;
+}
+
+#add_claim_form div
+{
+    margin: 1em 1em 1em 1em;
+}
+
+.delete_file_mode
+{
+    color: red;
+    border-color: red;
+}
+.delete_file_mode:hover
+{
+    color: white;
+    background-color: red;
 }
