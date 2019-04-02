@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Claims
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+
+    <form method="post" action="/edit_claim/{{claim.id}}" id="edit_claim_form">
+  
+      <div class="form-group d-inline m-1">
+        <input type="text" name="unit" placeholder="Unit" value="{{claim.unit}}">
+       </div>
+  
+      <div class="form-group d-inline m-1">
+        <input type="text" name="customer" placeholder="Customer" value="{{claim.customer}}">
+      </div>
+  
+      <div class="form-group d-inline m-1">
+        <input type="text" name="bl" placeholder="Bill of loading" value="{{claim.bl}}">
+      </div>
+  
+      <div class="form-group d-inline m-1">
+        <input type="text" name="charge" placeholder="Charge" value="{{claim.charge}}">
+      </div>
+  
+      <div class="form-group d-inline m-1">
+        <input type="text" name="invoice" placeholder="Invoice Number" value="{{claim.invoice}}">
+      </div>
+        
+      <div class="form-group d-inline m-1">
+        <input type="text" name="date" placeholder="Date" value="{{claim.date}}">
+      </div>
+
+      <div class="form-group d-inline m-1">
+        <input type="text" name="status" placeholder="Status" value="{{claim.status}}">
+      </div>
+
+      <div class="form-group d-inline m-1">
+        <input type="text" name="damage" placeholder="Damage" value="{{claim.damage}}">
+      </div>
+  
+      <div class="form-group m-1">
+        <textarea type="text" name="comment" placeholder="Comments" value="{{claim.comment}}"></textarea>
+      </div>
+
+    <div class="form-group m-1">
+        <select type="text" name="country">
+        
+          {% if claim.country == "us" %}
+            <option value="us" selected>U.S.</option>
+            <option value="dr">Dominican Republic</option>
+            <option value="haiti">haiti</option>
+  
+          {% elif claim.country == "dr" %}
+          <option value="us" >U.S.</option>
+          <option value="dr" selected>Dominican Republic</option>
+          <option value="haiti">haiti</option>
+  
+          {% elif claim.country == "haiti" %}
+          <option value="us" >U.S.</option>
+          <option value="dr">Dominican Republic</option>
+          <option value="haiti" selected>Haiti</option>
+          
+          {% endif %}
+  
+        </select>
+      </div>
+      
+    
+    <div class="form-group m-2">
+        <button class="btn btn-primary submit-button" type="submit">Save</button>
+    </div>
+
+  </form>
+
+</div>
+
+{% endblock %}
