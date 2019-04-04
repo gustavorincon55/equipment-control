@@ -1,7 +1,6 @@
 import os
 
 import warnings
-#from cs50 import SQL
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -100,13 +99,16 @@ def display_claims():
     Display all the damage records
     """
 
-    claims = Claim.query.all()
+    claims = Claim.query.order_by(Claim.id.desc())
+
+    len_of_files_per_claims = {}
 
     for claim in claims:
-        claim.files.length = len(claim.files)
+        len_of_files_per_claims[claim.id] = len(claim.files)
 
-            
-    return render_template("claims.html", claims = claims, country= "")
+    print(len_of_files_per_claims)
+
+    return render_template("claims.html", claims = claims, len_of_files_per_claims = len_of_files_per_claims, country= "")
 
 @app.route("/claims/<country>")
 @login_required
@@ -118,19 +120,21 @@ def display_claims_by_country(country):
     Display all the damage records by country
     """
 
-    claims = Claim.query.filter_by(country=country)
+    claims = Claim.query.filter_by(country=country).order_by(Claim.id.desc())
 
+    len_of_files_per_claims = {}
+    
     for claim in claims:
-        claim.files.length = len(claim.files)
+        len_of_files_per_claims[claim.id] = len(claim.files)
 
     if country == 'us':
-        return render_template("claims.html", claims = claims, us='active', country="us")
+        return render_template("claims.html", claims = claims, us='active', len_of_files_per_claims = len_of_files_per_claims, country="us")
 
     if country == 'dr':
-        return render_template("claims.html", claims = claims, dr='active', country="dr")
+        return render_template("claims.html", claims = claims, dr='active', len_of_files_per_claims = len_of_files_per_claims, country="dr")
     
     if country == 'haiti':
-        return render_template("claims.html", claims = claims, haiti='active', country="us")
+        return render_template("claims.html", claims = claims, haiti='active', len_of_files_per_claims = len_of_files_per_claims, country="us")
     
     return redirect("/claims")
 
@@ -139,11 +143,19 @@ def display_claims_by_country(country):
 @login_required
 def erase_claim(claim_id):
     warnings.filterwarnings("ignore")
+    # to minimize the size of the db make sure to make the database vacuum full.
 
     try:
         _claim = Claim.query.get(claim_id)
+        files = _claim.files
+        print(files)
     except:
         return "Error. Claim not faund"
+    
+
+    for _file in files:
+        print(_file.file_name)
+        db.session.delete(_file)
     
     db.session.delete(_claim)
     db.session.commit()
@@ -197,6 +209,53 @@ def update_claim(row):
     print("\n claim updated \n")
     return "claim updated."
 
+@app.route("/edit_claim/<claim_id>", methods=["GET", "POST"])
+def edit_claim(claim_id):
+    warnings.filterwarnings("ignore")
+
+    if request.method == "POST":
+        new_data = {}
+
+        new_data["id"] = claim_id
+        new_data["unit"] = request.form.get("unit")
+        new_data["customer"] = request.form.get("customer")
+        new_data["bl"] = request.form.get("bl")
+        new_data["charge"] = request.form.get("charge")
+        new_data["invoice"] = request.form.get("invoice")
+        new_data["date"] = request.form.get("date")
+        new_data["status"] = request.form.get("status")
+        new_data["damage"] = request.form.get("damage")
+        new_data["comment"] = request.form.get("comment")
+        new_data["country"] = request.form.get("country")
+        
+        old_data = Claim.query.get(new_data['id'])
+
+        old_data.unit = new_data['unit']
+        old_data.customer = new_data['customer']
+        old_data.bl = new_data['bl']
+        old_data.charge = usd(new_data['charge'])
+        old_data.invoice = new_data['invoice']
+        old_data.date = new_data['date']
+        old_data.status = new_data['status']
+        old_data.damage = new_data['damage']
+        old_data.comment = new_data['comment']
+        old_data.country = new_data['country']
+
+        db.session.commit()
+
+        flash("Claim was successfully edited. Claim unit: " + new_data['unit'] + ".")
+        return redirect("/claims")
+
+    #try:
+    claim = Claim.query.filter_by(id = claim_id).first()
+    
+    print(claim.unit, "\n\nworking?\n\n")
+
+    return render_template("edit_claim.html", claim = claim)
+
+    #except:
+     #   flash("claim doesn't exist.")
+      #  return redirect("/")
 
 @app.route("/add_file", methods=["GET","POST"])
 @login_required

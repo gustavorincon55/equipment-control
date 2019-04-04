@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Claims
+    Edit claim
 {% endblock %}
 
 {% block main %}
@@ -11,7 +11,7 @@
   <form method="post" action="/add_claim" id="add_claim_form">
 
     <div class="form-group d-inline m-1">
-      <input type="text" name="unit" placeholder="Container" autofocus>
+      <input type="text" name="unit" placeholder="Container">
      </div>
 
     <div class="form-group d-inline m-1">
@@ -23,7 +23,7 @@
     </div>
 
     <div class="form-group d-inline m-1">
-      <input type="text" name="charge" placeholder="Charge">
+      <input type="text" name="charge" placeholder="Charge" >
     </div>
 
     <div class="form-group d-inline m-1">
@@ -31,22 +31,22 @@
     </div>
 
     <div class="form-group d-inline m-1">
-      <input type="text" name="damage" placeholder="Damage">
+      <input type="text" name="damage" placeholder="Damage" >
     </div>
 
     <div class="form-group m-1">
-      <textarea type="text" name="comment" placeholder="Comments"></textarea>
+      <textarea type="text" name="comment" placeholder="Comments" ></textarea>
     </div>
 
     <div class="form-group m-1">
-      <select type="text" name="country">
-        <option value="us">U.S.</option>
-        <option value="dr">Dominican Republic</option>
-        <option value="haiti">haiti</option>
-
-      </select>
-    </div>
-    
+        <select type="text" name="country">
+          <option value="us">U.S.</option>
+          <option value="dr">Dominican Republic</option>
+          <option value="haiti">Haiti</option>
+  
+        </select>
+      </div>
+  
     <div class="form-group m-2">
         <button class="btn btn-primary submit-button" type="submit">Submit</button>
     </div>

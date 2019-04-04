@@ -2,7 +2,8 @@
 
 {% block nav %}
 	<li class="nav-item"><a class="nav-link" onclick="saveAll()" href="#">Save</a></li>
-	<li class="nav-item"><a class="nav-link" href="/add_claim">Add claim</a></li>
+	<li class="nav-item"><a class="nav-link" href="/add_claim" id="navBarTarget">Add claim</a></li>
+	<li class="nav-item"><a class="nav-link" onclick="editClaim()" id="navBarTarget">Edit claim</a></li>
 </ul>
 
 <ul class="nav nav-tabs" country={{country}}>
@@ -13,7 +14,7 @@
 		<a  style="color:grey;" class="nav-link {{dr}}" href="/claims/dr">D.R.</a>
 	</li>
 	<li class="nav-item">
-		<a  style="color:grey;" class="nav-link {{haiti}}" href="/claims/haiti">haiti</a>
+		<a  style="color:grey;" class="nav-link {{haiti}}" href="/claims/haiti">Haiti</a>
 	</li>
 
 {% endblock %}
@@ -102,8 +103,8 @@
 						
 						<!-- Button trigger modal -->
 
-						<button type="button" class='btn btn-secondary buttonAndCounter{{claim.id}}'style="width:50%;" data-toggle="modal" data-target="#claim-{{claim.id}}">
-								{{claim.files.length}}
+						<button type="button" class="btn btn-secondary buttonAndCounter{{claim.id}}" style="width:50%;" data-toggle="modal" data-target="#claim-{{claim.id}}">
+								{{len_of_files_per_claims[claim.id]}}
 						</button>
 
 					</div>

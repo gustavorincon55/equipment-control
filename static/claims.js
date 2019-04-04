@@ -19,35 +19,13 @@ function addListeners(rows) {
 		for(let _td of row.children) {
 			_td.addEventListener("dblclick", function() {
 				makeRowEditable(row);
-				//_td.parentElement.focus();
 			});
-			/*_td.children[0].addEventListener("dblclick", function() {
-				makeRoweditable(row);
-			});*/
-		}
 
-		/*row.addEventListener("dblclick", function() {
-			makeRowEditable(this);
-		});
-		*/
+		}
 
 		row.addEventListener("input", function() {
 			isChanged = true;
 		});
-
-		/*
-		row.addEventListener("blur", function() {
-
-			if (isChanged == true) {
-
-				isChanged = false;
-				return updateClaimTable(row);
-			}
-
-			return endEdit(this);
-
-		});
-		*/
 
 		row.querySelector('[type = file]').addEventListener("change", function() {
 			sendFileToServer(this.parentNode.parentNode.parentNode)
@@ -58,6 +36,7 @@ function addListeners(rows) {
 
 // function called after a double click on a row
 function makeRowEditable(row) {
+
 
 	if(row.contentEditable == true) {
 		return "";
@@ -275,10 +254,16 @@ function confirmClaimDelete() {
 }
 
 function sendFileToServer(form) {
+
+
+	
+	
+	
 	console.log(form);
+	
 	let file = form.children[0].children[0].children[0];
 	let claim_id = form.getAttribute("claim_id");
-	
+		
 	let formData = new FormData(form);
 	formData.append("claim_id", claim_id);
 
@@ -289,7 +274,8 @@ function sendFileToServer(form) {
 		if(this.readyState == 4) {
 			alert(this.responseText)
 			console.log(this.response)
-			//location.reload()
+			saveAll();
+			location.reload()
 		}
 	};
 
@@ -368,4 +354,25 @@ function deleteFile(fileHtml) {
 
 		}
 	}
+}
+
+function editClaim() {
+
+	let rows = document.querySelectorAll(".editable-row");
+
+	if (rows.length != 1) {
+		return document.getElementsByTagName("header")[0].innerHTML = 
+		`                
+		<div class="alert alert-warning alert-dismissible text-center fade show" role="alert">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			You need to select one claim at a time.
+		</div>
+		`
+	} 
+
+	row = rows[0];
+
+	let claimId = row.getAttribute("claim_id");
+
+	return window.location.href = "/edit_claim/" + claimId;
 }
