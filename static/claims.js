@@ -1,7 +1,10 @@
 
 //document.onload = 
 
-addListeners(document.querySelectorAll("tr"))
+addListeners(document.querySelectorAll("tr"));
+
+// fix issue with chrome and empty div inside the table
+eraseEmptyDiv(document.querySelectorAll("tr"));
 console.log("loaded");
 
 
@@ -116,7 +119,7 @@ function saveAll() {
 			updateClaimTable(row);
 		}
 	}
-	 console.log('saveAll ended');
+	location.reload()
 };
 
 function deleteClaim(claimId) {
@@ -254,10 +257,6 @@ function confirmClaimDelete() {
 }
 
 function sendFileToServer(form) {
-
-
-	
-	
 	
 	console.log(form);
 	
@@ -375,4 +374,16 @@ function editClaim() {
 	let claimId = row.getAttribute("claim_id");
 
 	return window.location.href = "/edit_claim/" + claimId;
+}
+
+function eraseEmptyDiv(rows) {
+	for(let row of rows){
+		for (let td of row.children) {
+			if(td.innerText == "") {
+				td.innerHTML = "";
+			}
+		}
+	}
+
+	console.log("eraseEmptyDiv")
 }

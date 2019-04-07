@@ -1,174 +1,177 @@
 {% extends "layout.html" %}
 
 {% block nav %}
-	<li class="nav-item"><a class="nav-link" onclick="saveAll()" href="#">Save</a></li>
-	<li class="nav-item"><a class="nav-link" href="/add_claim" id="navBarTarget">Add claim</a></li>
-	<li class="nav-item"><a class="nav-link" onclick="editClaim()" id="navBarTarget">Edit claim</a></li>
+<li class="nav-item"><a class="nav-link" onclick="saveAll()" href="#">Save</a></li>
+<li class="nav-item"><a class="nav-link" href="/add_claim" id="navBarTarget">Add claim</a></li>
+<li class="nav-item"><a class="nav-link" onclick="editClaim()" href="#" id="navBarTarget">Edit claim</a></li>
 </ul>
 
 <ul class="nav nav-tabs" country={{country}}>
 	<li class="nav-item">
-		<a  style="color:grey;" class="nav-link {{us}}" href="/claims/us" >U.S.</a>
+		<a style="color:grey;" class="nav-link {{us}}" href="/claims/us">U.S.</a>
 	</li>
 	<li class="nav-item">
-		<a  style="color:grey;" class="nav-link {{dr}}" href="/claims/dr">D.R.</a>
+		<a style="color:grey;" class="nav-link {{dr}}" href="/claims/dr">D.R.</a>
 	</li>
 	<li class="nav-item">
-		<a  style="color:grey;" class="nav-link {{haiti}}" href="/claims/haiti">Haiti</a>
+		<a style="color:grey;" class="nav-link {{haiti}}" href="/claims/haiti">Haiti</a>
 	</li>
 
-{% endblock %}
+	{% endblock %}
 
-{% block nav2 %}
+	{% block nav2 %}
 	<li class="nav-item"><a class="nav-link" onclick="confirmClaimDelete()" href="#">Delete claim</a></li>
-{% endblock %}
+	{% endblock %}
 
 
-{% block title %}
-    Claims
-{% endblock %}
+	{% block title %}
+	Claims
+	{% endblock %}
 
-{% block main %}
+	{% block main %}
 
-<div style="margin:auto; max-width:100%;" class="container-fluid overflow-auto">
-	<table id="main-table" class="table table-bordered table-striped claims-table" style="min-width: 90%;" edited="false">
-		<tr class="thead-dark" classcontenteditable="false">
-			<th scope="col" >Unit</th>
-			<th scope="col" >Customer</th>
-			<th scope="col" >Booking/BOL</th>
-			<th scope="col" >Charges</th>
-			<th scope="col" >Invoice</th>
-			<th scope="col" >Date</th>
-			<th scope="col" >Status</th>
-			<th scope="col" >Attachements</th>
-			<th scope="col" >Damage</th>
-			<th scope="col" style="width:10%;" >Comments</th>
-		</tr>
+	<div style="margin:auto; max-width:100%;" class="container-fluid overflow-auto">
+		<table id="main-table" class="table table-bordered table-striped claims-table" style="min-width: 90%;"
+			edited="false">
+			<tr class="thead-dark" classcontenteditable="false">
+				<th scope="col">Unit</th>
+				<th scope="col">Customer</th>
+				<th scope="col">Booking/BOL</th>
+				<th scope="col">Charges</th>
+				<th scope="col">Invoice</th>
+				<th scope="col">Date</th>
+				<th scope="col">Status</th>
+				<th scope="col">Attachements</th>
+				<th scope="col">Damage</th>
+				<th scope="col" style="width:10%;">Comments</th>
+			</tr>
 
-		<!-- replace the repetitive td with a loop-->
-		<!-- Get rid of the div when there is no content -->
-		{% for claim in claims %}
-		<tr scope="row" claim_id="{{ claim.id }}">
+			<!-- replace the repetitive td with a loop-->
+			<!-- Get rid of the div when there is no content -->
+			{% for claim in claims %}
+			<tr scope="row" claim_id="{{ claim.id }}">
 
-			<td class="align-baseline" meaning="unit">
-				<div class="claim-cell" style="">
-					{{ claim.unit }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="customer">
-				<div class="claim-cell" style="">
-					{{ claim.customer }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="bl">
-				<div class="claim-cell" style="">
-					{{ claim.bl }}
-				</div>
-			</td>
-			<td class="align-baseline" meaning="charge">
-				<div class="claim-cell " style="">
-					{{ claim.charge }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="invoice">
-				<div class="claim-cell" style="">
-					{{ claim.invoice }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="date">
-				<div class="claim-cell" style="">
-					{{ claim.date }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="status">
-				<div class="claim-cell" style="">
-					{{ claim.status }}
-				</div>
-			</td>
-
-			<td class="align-baseline" meaning="attachements">
-
-				<form action="/add_file" method="POST" enctype="multipart/form-data" claim_id = 
-				{{claim.id}} >
-					<div class="btn-group btn-group-toggle" max-widt="100%">
-						
-						<label class="btn btn-secondary" style="width:50%;">
-								<input type="file" name="claim_file" class="btn btn-secondary" style="display: none;" placeholder="+">+
-						</label>
-						
-						<!-- Button trigger modal -->
-
-						<button type="button" class="btn btn-secondary buttonAndCounter{{claim.id}}" style="width:50%;" data-toggle="modal" data-target="#claim-{{claim.id}}">
-								{{len_of_files_per_claims[claim.id]}}
-						</button>
-
+				<td class="align-middle" meaning="unit">
+					<div class="claim-cell" style="">
+						{{ claim.unit }}
 					</div>
-				</form>
+				</td>
 
-				<!-- Modal -->
+				<td class="align-middle" meaning="customer">
+					<div class="claim-cell" style="">
+						{{ claim.customer }}
+					</div>
+				</td>
 
-				<div class="modal fade" id="claim-{{claim.id}}" tabindex="-1" role="dialog" aria-labelledby="claim-{{claim.id}}" aria-hidden="true">
-					<div class="modal-dialog modal-dialog-centered" role="document">
-						<div class="modal-content">
-							<div class="modal-header">
-								<h5 class="modal-title" id="claim-{{claim.id}}">Attachements</h5>
-								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-									<span aria-hidden="true">&times;</span>
-								</button>
-							</div>
-							<div class="modal-body">
-							
-								{% for file in claim.files %}
-								
-								<a target="_blank" href="/download_file/{{file.id}}/{{claim.id}}"
-								style="width:90%" file_id="{{file.id}}" claim_id="{{claim.id}}" class="btn btn-outline-secondary modal_file" >
-									{{file.file_name}}
-								</a>
+				<td class="align-middle" meaning="bl">
+					<div class="claim-cell" style="">
+						{{ claim.bl }}
+					</div>
+				</td>
+				<td class="align-middle" meaning="charge">
+					<div class="claim-cell " style="">
+						{{ claim.charge }}
+					</div>
+				</td>
 
-								{% endfor %}
-							
+				<td class="align-middle" meaning="invoice">
+					<div class="claim-cell" style="">
+						{{ claim.invoice }}
+					</div>
+				</td>
 
-							</div>
-							<div class="modal-footer">
-								<label type="button" class="btn btn-danger" onclick="deleteFileMode(this.parentNode.parentNode.children[1])">
+				<td class="align-middle" meaning="date">
+					<div class="claim-cell" style="">
+						{{ claim.date }}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="status">
+					<div class="claim-cell" style="">
+						{{ claim.status }}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="attachements">
+
+					<form action="/add_file" method="POST" enctype="multipart/form-data" claim_id={{claim.id}}>
+						<div class="btn-group btn-group-toggle" max-widt="100%">
+
+							<label class="btn btn-secondary" style="width:50%;">
+								<input type="file" name="claim_file" class="btn btn-secondary" style="display: none;"
+									placeholder="+">+
+							</label>
+
+							<!-- Button trigger modal -->
+
+							<button type="button" class="btn btn-secondary buttonAndCounter{{claim.id}}"
+								style="width:50%;" data-toggle="modal" data-target="#claim-{{claim.id}}">
+								{{len_of_files_per_claims[claim.id]}}
+							</button>
+
+						</div>
+					</form>
+
+					<!-- Modal -->
+
+					<div class="modal fade" id="claim-{{claim.id}}" tabindex="-1" role="dialog"
+						aria-labelledby="claim-{{claim.id}}" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="claim-{{claim.id}}">Attachements</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body">
+
+									{% for file in claim.files %}
+
+									<a target="_blank" href="/download_file/{{file.id}}/{{claim.id}}" style="width:90%"
+										file_id="{{file.id}}" claim_id="{{claim.id}}"
+										class="btn btn-outline-secondary modal_file">
+										{{file.file_name}}
+									</a>
+
+									{% endfor %}
+
+
+								</div>
+								<div class="modal-footer">
+									<label type="button" class="btn btn-danger"
+										onclick="deleteFileMode(this.parentNode.parentNode.children[1])">
 										Delete a file
-								</label>
+									</label>
 
-								<label type="button" class="btn btn-secondary" data-dismiss="modal" >
-									Close
-								</label>
-								
+									<label type="button" class="btn btn-secondary" data-dismiss="modal">
+										Close
+									</label>
+
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			</td>
+				</td>
 
-			<td class="align-baseline" meaning="damage">
-				<div class="claim-cell" style="">
-					{{ claim.damage }}
-				</div>
-			</td>
+				<td class="align-middle" meaning="damage">
+					<div class="claim-cell" style="">
+						{{ claim.damage }}
+					</div>
+				</td>
 
-			<td class="align-baseline" meaning="commnet">
-				<div class="claim-cell" style="">
-					{{ claim.comment }}
-				</div>
-			</td>
-		</tr>
-		{% endfor %}
-	</table>
-</div>
+				<td class="align-middle" meaning="commnet">
+					<div class="claim-cell" style="width: 15em;">
+						{{ claim.comment }}
+					</div>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
 
-{% endblock %}
+	{% endblock %}
 
-{% block js %}
-<script src="/static/claims.js"></script>
-{% endblock %}
-
-
+	{% block js %}
+	<script src="/static/claims.js"></script>
+	{% endblock %}

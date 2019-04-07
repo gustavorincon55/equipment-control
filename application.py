@@ -1,19 +1,15 @@
 import os
-
 import warnings
-
 from flask_sqlalchemy import SQLAlchemy
-
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, send_file
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-
-from helpers import apology, login_required, lookup, usd
-
+from helpers import login_required, usd
 import datetime
 from io import BytesIO
+import csv
 
 # Configure application
 app = Flask(__name__)
@@ -477,6 +473,63 @@ def logout():
     return redirect("/")
 
 
+@app.route("/backup")
+def backup():
+    """Log user out"""
+
+    claims = Claim.query.order_by(Claim.id.desc())
+
+    # make a directory with one directory per claim that has an attachement.
+    if not os.path.exists('backup'):
+        os.makedirs('backup')
+    
+    dir_name = 'backup/' + str(datetime.datetime.today())
+
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+    for claim in claims:
+        dir_unit = dir_name + "/" + claim.unit
+        dir_claim = dir_unit + "/" + change_slashes(claim.date)
+
+        if not os.path.exists(dir_unit):
+            os.makedirs(dir_unit)
+        
+        if not os.path.exists(dir_claim):
+            os.makedirs(dir_claim)
+
+        for _file in claim.files:
+            with open(dir_claim + "/" + _file.file_name, "bw") as new_file:
+                new_file.write(_file.data)
+
+
+
+
+
+    # make a file with the text-based data
+    with open(dir_name + "/bakcup.csv", "wt") as backup_file:
+        field_names = ['id','unit','customer','bl','charge','invoice','date','status','damage','comment','country','attachements_count']
+        
+        writer = csv.DictWriter(backup_file, delimiter=",", quotechar='"',fieldnames = field_names)
+        
+        writer.writeheader()
+        for claim in claims:
+
+            writer.writerow({'id':claim.id,'unit':claim.unit,'customer':claim.customer,'bl':claim.bl,'charge':claim.charge,'invoice':claim.invoice,'date':claim.date,'status':claim.status,'damage':claim.damage,'comment':claim.comment,'country':claim.country,'attachements_count':len(claim.files)})
+
+    
+
+
+
+    flash("Backup saved!")
+    return redirect("/")
+
+def change_slashes(s):
+    s = s.split("/")
+    s = "-".join(s)
+    return s
+
+
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
@@ -484,7 +537,7 @@ def errorhandler(e):
 
     return "\nYou got a mistake: " + e.name + " "+  str(e.code) + "\n"
     flash("You got a mistake: " + e.name + " "+  str(e.code))
-    return render_template("layout.html")
+    return redirect("/")
 
 
 # Listen for errors
