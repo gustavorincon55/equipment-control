@@ -26,7 +26,7 @@
 
     <body>
 
-        <nav class="navbar navbar-expand-md navbar-light bg-light border">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border">
             <a class="navbar-brand" href="/">Equipment control</a>
             <button aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbar" data-toggle="collapse" type="button">
                 <span class="navbar-toggler-icon"></span>
@@ -34,7 +34,6 @@
             <div class="collapse navbar-collapse" id="navbar">
                 {% if session.user_id %}
                     <ul class="navbar-nav mr-auto mt-2">
-                        <!--<li class="nav-item"><a class="nav-link" href="/claims">Claims</a></li>-->
                         {% block nav %}{% endblock %}
 
                     </ul>

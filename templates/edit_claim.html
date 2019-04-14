@@ -1,79 +1,132 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Claims
+Edit claim
 {% endblock %}
 
 {% block main %}
-
 <div class="container">
 
-    <form method="post" action="/edit_claim/{{claim.id}}" id="edit_claim_form">
-  
-      <div class="form-group d-inline m-1">
-        <input type="text" name="unit" placeholder="Unit" value="{{claim.unit}}">
-       </div>
-  
-      <div class="form-group d-inline m-1">
-        <input type="text" name="customer" placeholder="Customer" value="{{claim.customer}}">
-      </div>
-  
-      <div class="form-group d-inline m-1">
-        <input type="text" name="bl" placeholder="Bill of loading" value="{{claim.bl}}">
-      </div>
-  
-      <div class="form-group d-inline m-1">
-        <input type="text" name="charge" placeholder="Charge" value="{{claim.charge}}">
-      </div>
-  
-      <div class="form-group d-inline m-1">
-        <input type="text" name="invoice" placeholder="Invoice Number" value="{{claim.invoice}}">
-      </div>
-        
-      <div class="form-group d-inline m-1">
-        <input type="text" name="date" placeholder="Date" value="{{claim.date}}">
+  <form method="post" action="/edit_claim/{{claim.id}}" id="edit_claim_form" style="margin: auto;">
+    <div class="row justify-content-center">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_unit">Unit:</label>
+        <br>
+        <input type="text" name="unit" placeholder="Unit" id="claim_unit" value="{{ claim.unit}}">
       </div>
 
-      <div class="form-group d-inline m-1">
-        <input type="text" name="status" placeholder="Status" value="{{claim.status}}">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_customer">Customer:</label>
+        <br>
+        <input type="text" name="customer" placeholder="Customer" id="claim_customer" value="{{ claim.customer}}">
       </div>
 
-      <div class="form-group d-inline m-1">
-        <input type="text" name="damage" placeholder="Damage" value="{{claim.damage}}">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_bl">BL:</label>
+        <br>
+        <input type="text" name="bl" placeholder="Bill of loading" id="claim_bl" value="{{ claim.bl}}">
       </div>
-  
-      <div class="form-group m-1">
-        <textarea type="text" name="comment" placeholder="Comments" >{{claim.comment}}</textarea>
+    </div>
+    <div class="row justify-content-center">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_charge">Charge:</label>
+        <br>
+        <input type="text" name="charge" placeholder="Charge" id="claim_charge" value="{{ claim.charge}}">
       </div>
 
-    <div class="form-group m-1">
-        <select type="text" name="country">
-        
-          {% if claim.country == "us" %}
+      <div class="form-group col-lg-3 mb-2 ">
+        <label for="claim_date">Date:</label>
+        <br>
+        <input type="text" name="date" placeholder="Date" value="{{claim.date}}" id="claim_date" value="{{ claim.date}}">
+      </div>
+
+      <div class="form-group col-lg-3 mb-2 ">
+        <label for="claim_damage">Damage:</label>
+        <br>
+        <input type="text" name="damage" placeholder="Damage" id="claim_damage" value="{{ claim.damage}}">
+      </div>
+    </div>
+  <div class="row justify-content-center">
+
+  </div>
+    <div class="row justify-content-center">
+        <div class="form-group col-lg-3 mb-2 ">
+            <label for="claim_invoice">Invoice:</label>
+            <br>
+            <input type="text" name="invoice" placeholder="Invoice" id="claim_invoice" value="{{ claim.invoice}}">
+        </div>
+
+      <div class="form-group  col-lg-3 mb-2">
+        <label for="claim_country">Country:</label>
+        <br>
+        <select type="text" name="country" id="claim_country">
+
+            {% if claim.country == "us" %}
             <option value="us" selected>U.S.</option>
             <option value="dr">Dominican Republic</option>
-            <option value="haiti">haiti</option>
-  
-          {% elif claim.country == "dr" %}
-          <option value="us" >U.S.</option>
-          <option value="dr" selected>Dominican Republic</option>
-          <option value="haiti">haiti</option>
-  
-          {% elif claim.country == "haiti" %}
-          <option value="us" >U.S.</option>
-          <option value="dr">Dominican Republic</option>
-          <option value="haiti" selected>Haiti</option>
-          
-          {% endif %}
-  
-        </select>
-      </div>
-      
+            <option value="haiti">Haiti</option>
     
-    <div class="form-group m-2">
-        <button class="btn btn-primary submit-button" type="submit">Save</button>
-    </div>
+            {% elif claim.country == "dr" %}
+            <option value="us">U.S.</option>
+            <option value="dr" selected>Dominican Republic</option>
+            <option value="haiti">Haiti</option>
+    
+            {% elif claim.country == "haiti" %}
+            <option value="us">U.S.</option>
+            <option value="dr">Dominican Republic</option>
+            <option value="haiti" selected>Haiti</option>
+    
+            {% endif %}
+    
+          </select>
+      </div>
 
+      <div class="form-group  col-lg-3 mb-2">
+        <label for="claim_status">Status:</label>
+        <br>
+        <select type="text" name="status" id="claim_status">
+            {% if claim.status == "OPEN" %}
+
+            <option value="OPEN" selected>OPEN</option>
+            <option value="PAID"> PAID</option>
+            <option value="CLOSE">CLOSE</option>
+            
+            {% elif claim.status == "PAID" %}
+
+            <option value="OPEN" >OPEN</option>
+            <option value="PAID" selected> PAID</option>
+            <option value="CLOSE">CLOSE</option>
+            
+            {% elif claim.status == "CLOSE" %}
+
+            <option value="OPEN" selected>OPEN</option>
+            <option value="PAID"> PAID</option>
+            <option value="CLOSE">CLOSE</option>
+            {% else %}
+            <option value="" selected disabled></option>
+            <option value="OPEN">OPEN</option>
+            <option value="PAID"> PAID</option>
+            <option value="CLOSE">CLOSE</option>
+
+            {% endif %}
+
+        </select> 
+      </div>
+
+    </div>
+<div class="row justify-content-center">
+    <div class="form-group  col-lg-8">
+      <label for="claim_comment" class="align-self-center ">Comment:</label>
+      <br>
+      <textarea type="text" name="comment" placeholder="Comments" id="claim_comment"
+        style="width:40%; padding: 1em"> {{ claim.comment }}</textarea>
+    </div>
+</div>
+
+
+    <div class="form-group m-2">
+      <button class="btn btn-primary submit-button" type="submit">Save</button>
+    </div>
   </form>
 
 </div>

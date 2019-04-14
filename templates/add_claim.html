@@ -1,56 +1,88 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Edit claim
+Add claim
 {% endblock %}
 
 {% block main %}
-
 <div class="container">
 
-  <form method="post" action="/add_claim" id="add_claim_form">
+  <form method="post" action="/add_claim" id="add_claim_form" style="margin: auto;">
+    <div class="row justify-content-center">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_unit">Unit:</label>
+        <br>
+        <input type="text" name="unit" placeholder="Unit" id="claim_unit" >
+      </div>
 
-    <div class="form-group d-inline m-1">
-      <input type="text" name="unit" placeholder="Container">
-     </div>
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_customer">Customer:</label>
+        <br>
+        <input type="text" name="customer" placeholder="Customer" id="claim_customer">
+      </div>
 
-    <div class="form-group d-inline m-1">
-      <input type="text" name="customer" placeholder="Customer">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_bl">BL:</label>
+        <br>
+        <input type="text" name="bl" placeholder="Bill of loading" id="claim_bl">
+      </div>
+    </div>
+    <div class="row justify-content-center">
+      <div class="form-group col-lg-3 mb-2  ">
+        <label for="claim_charge">Charge:</label>
+        <br>
+        <input type="text" name="charge" placeholder="Charge" id="claim_charge">
+      </div>
+
+      <div class="form-group col-lg-3 mb-2 ">
+        <label for="claim_date">Date:</label>
+        <br>
+        <input type="text" name="date" placeholder="Date" value="{{date}}" id="claim_date">
+      </div>
+
+      <div class="form-group col-lg-3 mb-2 ">
+        <label for="claim_damage">Damage:</label>
+        <br>
+        <input type="text" name="damage" placeholder="Damage" id="claim_damage">
+      </div>
     </div>
 
-    <div class="form-group d-inline m-1">
-      <input type="text" name="bl" placeholder="Bill of loading">
-    </div>
+    <div class="row justify-content-center">
 
-    <div class="form-group d-inline m-1">
-      <input type="text" name="charge" placeholder="Charge" >
-    </div>
-
-    <div class="form-group d-inline m-1">
-      <input type="text" name="date" placeholder="Date" value="{{date}}">
-    </div>
-
-    <div class="form-group d-inline m-1">
-      <input type="text" name="damage" placeholder="Damage" >
-    </div>
-
-    <div class="form-group m-1">
-      <textarea type="text" name="comment" placeholder="Comments" ></textarea>
-    </div>
-
-    <div class="form-group m-1">
-        <select type="text" name="country">
+      <div class="form-group  col-lg-3 mb-2">
+        <label for="claim_country">Country:</label>
+        <br>
+        <select type="text" name="country" id="claim_country">
           <option value="us">U.S.</option>
           <option value="dr">Dominican Republic</option>
           <option value="haiti">Haiti</option>
-  
         </select>
       </div>
-  
-    <div class="form-group m-2">
-        <button class="btn btn-primary submit-button" type="submit">Submit</button>
-    </div>
 
+      <div class="form-group  col-lg-3 mb-2">
+        <label for="claim_status">Status:</label>
+        <br>
+        <select type="text" name="Status" id="claim_status">
+          <option value="OPEN" selected>OPEN</option>
+          <option value="PAID"> PAID</option>
+          <option value="CLOSE">CLOSE</option>
+        </select> 
+      </div>
+
+    </div>
+<div class="row justify-content-center">
+    <div class="form-group  col-lg-8">
+      <label for="claim_comment" class="align-self-center ">Comment:</label>
+      <br>
+      <textarea type="text" name="comment" placeholder="Comments" id="claim_comment"
+        style="width:40%; padding: 1em"></textarea>
+    </div>
+</div>
+
+
+    <div class="form-group m-2">
+      <button class="btn btn-primary submit-button" type="submit">Submit</button>
+    </div>
   </form>
 
 </div>

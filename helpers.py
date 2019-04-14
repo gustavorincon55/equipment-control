@@ -19,7 +19,7 @@ def usd(value):
     """Format value as USD."""
     try:
         value = int(value)
-        value = f"${value:,.2f}"
+        value = f"${value}"
         return value
     except:
         return value

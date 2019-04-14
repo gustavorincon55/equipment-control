@@ -95,7 +95,7 @@ def display_claims():
     Display all the damage records
     """
 
-    claims = Claim.query.order_by(Claim.id.desc())
+    claims = Claim.query.filter_by(status="OPEN").order_by(Claim.id.desc())
 
     len_of_files_per_claims = {}
 
@@ -104,7 +104,7 @@ def display_claims():
 
     print(len_of_files_per_claims)
 
-    return render_template("claims.html", claims = claims, len_of_files_per_claims = len_of_files_per_claims, country= "")
+    return render_template("claims.html", claims = claims, len_of_files_per_claims = len_of_files_per_claims, country= "", all = "active")
 
 @app.route("/claims/<country>")
 @login_required
@@ -116,7 +116,7 @@ def display_claims_by_country(country):
     Display all the damage records by country
     """
 
-    claims = Claim.query.filter_by(country=country).order_by(Claim.id.desc())
+    claims = Claim.query.filter_by(country=country, status="OPEN").order_by(Claim.id.desc())
 
     len_of_files_per_claims = {}
     
@@ -245,8 +245,6 @@ def edit_claim(claim_id):
     #try:
     claim = Claim.query.filter_by(id = claim_id).first()
     
-    print(claim.unit, "\n\nworking?\n\n")
-
     return render_template("edit_claim.html", claim = claim)
 
     #except:
@@ -282,16 +280,11 @@ def add_file():
 @login_required
 def download_file(file_id, claim_id):
     warnings.filterwarnings("ignore")
-    
-    ###########################################
-    '''
+
     try:
         _file = Claim_file.query.filter_by(id=file_id, claim_id=claim_id).first()
-        print(_file)
     except:
         return "an error ocurred. File not found."
-    '''
-    _file = Claim_file.query.filter_by(id=file_id, claim_id=claim_id).first()
 
     return send_file(BytesIO(_file.data), attachment_filename=_file.file_name, as_attachment=True)
 
@@ -474,6 +467,7 @@ def logout():
 
 
 @app.route("/backup")
+@login_required
 def backup():
     """Log user out"""
 
@@ -489,7 +483,7 @@ def backup():
         os.makedirs(dir_name)
 
     for claim in claims:
-        dir_unit = dir_name + "/" + claim.unit
+        dir_unit = dir_name + "/Attachments/" + claim.unit
         dir_claim = dir_unit + "/" + change_slashes(claim.date)
 
         if not os.path.exists(dir_unit):
@@ -517,12 +511,34 @@ def backup():
 
             writer.writerow({'id':claim.id,'unit':claim.unit,'customer':claim.customer,'bl':claim.bl,'charge':claim.charge,'invoice':claim.invoice,'date':claim.date,'status':claim.status,'damage':claim.damage,'comment':claim.comment,'country':claim.country,'attachements_count':len(claim.files)})
 
-    
-
-
 
     flash("Backup saved!")
     return redirect("/")
+
+
+@app.route("/claims_closed")
+@login_required
+def claims_closed():
+    _claims = Claim.query.order_by(Claim.id.desc())
+    claims = []
+
+    for _claim in _claims:
+        if _claim.status != "OPEN":
+            claim = {'id':_claim.id,'unit':_claim.unit,'customer':_claim.customer,'bl':_claim.bl,'charge':_claim.charge,'invoice':_claim.invoice,'date':_claim.date,'status':_claim.status,'damage':_claim.damage,'comment':_claim.comment,'country':_claim.country,'attachements_count':len(_claim.files)}
+
+            _files = []
+
+            for _file in _claim.files:
+                _files.append({"file_name":_file.file_name, "id": _file.id})
+
+
+            claim["files"] = _files
+
+            claims.append(claim)
+
+
+    return jsonify(claims)
+
 
 def change_slashes(s):
     s = s.split("/")

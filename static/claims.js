@@ -12,39 +12,48 @@ console.log("loaded");
 function addListeners(rows) {
 	let isChanged = false;
 
-	for(let row of rows) {
+	for (let row of rows) {
 
 		// don't mess with the header
-		if(row.getAttribute("scope") == "row") { 
+		if (row.getAttribute("scope") == "row") {
 
 
 
-		for(let _td of row.children) {
-			_td.addEventListener("dblclick", function() {
-				makeRowEditable(row);
+			for (let _td of row.children) {
+				_td.addEventListener("dblclick", function () {
+					makeRowEditable(row);
+				});
+
+			}
+
+			row.addEventListener("input", function () {
+				isChanged = true;
 			});
 
+			row.querySelector('[type = file]').addEventListener("change", function () {
+				sendFileToServer(this.parentNode.parentNode.parentNode)
+			})
+
 		}
-
-		row.addEventListener("input", function() {
-			isChanged = true;
-		});
-
-		row.querySelector('[type = file]').addEventListener("change", function() {
-			sendFileToServer(this.parentNode.parentNode.parentNode)
-		} )
 	}
-	}
+
+	let btn = document.querySelector("#closedClaimsBtn");
+	btn.addEventListener("click", function () {
+		showClosedClaims();
+	})
 }
 
 // function called after a double click on a row
 function makeRowEditable(row) {
 
 
-	if(row.contentEditable == true) {
+	if (row.contentEditable == true) {
 		return "";
 	}
-	
+
+	//row.querySelectorAll("select")[0].classList.remove("d-none")
+	//row.querySelectorAll("[meaning = 'status']")[0].classList.add("d-none")
+
 	row.contentEditable = true;
 	row.classList.add("editable-row");
 }
@@ -54,7 +63,7 @@ function endEdit(row) {
 	if (row.className != undefined) {
 		row.classList.remove("editable-row");
 	}
-	
+
 	return row.contentEditable = false;
 }
 
@@ -64,12 +73,14 @@ function updateClaimTable(row) {
 
 	xhttp.open("GET", "/update_claim/" + joinRowData(row), true);
 	xhttp.send();
-	xhttp.onreadystatechange = function() {
-		if(this.readyState == 4) {
+	xhttp.onreadystatechange = function () {
+		if (this.readyState == 4) {
 			console.log(this.responseText);
 			return endEdit(row);
 		}
+
 	};
+	//console.log("updateClaim", this)
 }
 
 function joinRowData(row) {
@@ -81,16 +92,16 @@ function joinRowData(row) {
 	data += "country=" + country.getAttribute("country") + '@@';
 	//let tr = row.children;
 	// get the data from the row and make an object.
-	let order = ['unit', 'customer', 'bl', 'charge', 'invoice', 'date', 'status', 'attachements','damage', 'comment'];
+	let order = ['unit', 'customer', 'bl', 'charge', 'invoice', 'date', 'status', 'attachements', 'damage', 'comment'];
 	let orderI = 0;
 
-	if(row.children.length == 10) {
-		for(let td of row.children) {
+	if (row.children.length == 10) {
+		for (let td of row.children) {
 
 			// cancell any "/". because it breaks the server on the url
 			let text = td.innerText;
 
-			if(text.split("/").length > 1) {
+			if (text.split("/").length > 1) {
 				text = text.split("/").join("-slash-");
 			}
 
@@ -98,28 +109,25 @@ function joinRowData(row) {
 			data += text;
 
 			//skip putting a @@ as the last item.
-			if(orderI === order.length - 1) {break;}
+			if (orderI === order.length - 1) { break; }
 			data += "@@";
 
 			orderI += 1;
 		}
-	} else { console.log("update the order variable with the header");}
+	} else { console.log("update the order variable with the header"); }
 
 
 	return data;
 }
 
 
-function saveAll() {
+function saveAllEditables() {
 
-	rows = document.querySelectorAll("tr");
+	rows = document.querySelectorAll("[contentEditable = 'true']");
 
-	for(let row of rows) {
-		if(row.getAttribute("scope") == "row") { 
-			updateClaimTable(row);
-		}
+	for (let row of rows) {
+		updateClaimTable(row);
 	}
-	location.reload()
 };
 
 function deleteClaim(claimId) {
@@ -131,8 +139,8 @@ function deleteClaim(claimId) {
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("GET", "/erase_claim/" + claimId, true);
 	xhttp.send();
-	xhttp.onreadystatechange = function() {
-		if(this.readyState == 4) {
+	xhttp.onreadystatechange = function () {
+		if (this.readyState == 4) {
 			console.log("server: ", this.responseText);
 			console.log(table)
 			table.removeChild(htmlRow);
@@ -147,14 +155,14 @@ function confirmClaimDelete() {
 	let rows = document.querySelectorAll(".editable-row");
 
 	if (rows.length != 1) {
-		return document.getElementsByTagName("header")[0].innerHTML = 
-		`                
+		return document.getElementsByTagName("header")[0].innerHTML =
+			`                
 		<div class="alert alert-warning alert-dismissible text-center fade show" role="alert">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			You need to select one claim at a time.
 		</div>
 		`
-	} 
+	}
 
 	row = rows[0];
 
@@ -165,15 +173,15 @@ function confirmClaimDelete() {
 	let order = ['unit', 'customer', 'bl', 'charge', 'invoice', 'date', 'status', 'attachements', 'damage', 'comment'];
 	claim = {};
 
-	for(let i = 0; i < order.length; i++) {
+	for (let i = 0; i < order.length; i++) {
 		claim[order[i]] = row.children[i].innerText;
 	}
 
 	console.log(claim)
 
 
-	let alertConfirmation = 
-	` 
+	let alertConfirmation =
+		` 
 		<div class="alert alert-danger alert-dismissible text-center fade show" role="alert">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			<p>Are you sure you want to delete claim:</p>
@@ -201,42 +209,42 @@ function confirmClaimDelete() {
 			
 						<td class="align-baseline" meaning="customer">
 							<div class="claim-cell" style="">
-								${claim.customer }
+								${claim.customer}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="bl">
 							<div class="claim-cell" style="">
-								${ claim.bl }
+								${ claim.bl}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="charge">
 							<div class="claim-cell " style="">
-								${ claim.charge }
+								${ claim.charge}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="invoice">
 							<div class="claim-cell" style="">
-								${ claim.invoice }
+								${ claim.invoice}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="date">
 							<div class="claim-cell" style="">
-								${ claim.date }
+								${ claim.date}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="status">
 							<div class="claim-cell" style="">
-								${ claim.status }
+								${ claim.status}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="damage">
 							<div class="claim-cell" style="">
-								${ claim.damage }
+								${ claim.damage}
 							</div>
 						</td>
 						<td class="align-baseline" meaning="commnet">
 							<div class="claim-cell" style="">
-								${ claim.comment }
+								${ claim.comment}
 							</div>
 						</td>
 					</tr>
@@ -257,23 +265,23 @@ function confirmClaimDelete() {
 }
 
 function sendFileToServer(form) {
-	
+
 	console.log(form);
-	
+
 	let file = form.children[0].children[0].children[0];
 	let claim_id = form.getAttribute("claim_id");
-		
+
 	let formData = new FormData(form);
 	formData.append("claim_id", claim_id);
 
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("POST", "/add_file");
 	xhttp.send(formData);
-	xhttp.onreadystatechange = function() {
-		if(this.readyState == 4) {
+	xhttp.onreadystatechange = function () {
+		if (this.readyState == 4) {
 			alert(this.responseText)
 			console.log(this.response)
-			saveAll();
+			saveAllEditables();
 			location.reload()
 		}
 	};
@@ -286,12 +294,12 @@ function getFileFromServer(file_data) {
 	claim_id = file_data.getAttribute("claim_id");
 	file_id = file_data.getAttribute("file_id");
 
-	console.log(claim_id,file_id)
+	console.log(claim_id, file_id)
 	let request = new XMLHttpRequest()
 
-	request.open("GET", "/download_file/" + file_id +"/" + claim_id);
+	request.open("GET", "/download_file/" + file_id + "/" + claim_id);
 	request.send();
-	request.onreadystatechange = function() {
+	request.onreadystatechange = function () {
 		console.log(this.response)
 	}
 }
@@ -301,17 +309,17 @@ function deleteFileMode(modal_body) {
 	console.log(modal_body)
 
 	files = modal_body.querySelectorAll("a");
-	
-	for(let file of files) {
-	
+
+	for (let file of files) {
+
 		file.className += " delete_file_mode";
 
-		
+
 		fileId = file.getAttribute("file_id");
 		claimId = file.getAttribute("claim_id");
-		console.log(fileId,claimId,"\n")
+		console.log(fileId, claimId, "\n")
 
-		file.addEventListener("click", function(event) {
+		file.addEventListener("click", function (event) {
 			event.preventDefault();
 			deleteFile(this);
 		})
@@ -321,13 +329,13 @@ function deleteFileMode(modal_body) {
 	modal_header.innerHTML = '<h5 class="m-auto">CLICK TO ERASE</h5>'
 
 	modal_footer = modal_body.parentNode.children[2];
-	modal_footer.innerHTML = 
-	`
+	modal_footer.innerHTML =
+		`
 	<label type="button" class="btn btn-secondary m-auto" onclick="location.reload()" >
 		Done
 	</label>
 	`
-	
+
 }
 
 function deleteFile(fileHtml) {
@@ -335,14 +343,14 @@ function deleteFile(fileHtml) {
 	claimId = fileHtml.getAttribute("claim_id");
 	modal_body = fileHtml.parentNode;
 	console.log(fileHtml);
-	console.log(fileId,claimId,'\n\n');
+	console.log(fileId, claimId, '\n\n');
 
 	let request = new XMLHttpRequest();
-	request.open("GET",`/delete_file/${fileId}/${claimId}`)
+	request.open("GET", `/delete_file/${fileId}/${claimId}`)
 	request.send()
-	request.onreadystatechange = function(){
-		if(this.readyState == 4) {
-			if(this.response == "deleted") {
+	request.onreadystatechange = function () {
+		if (this.readyState == 4) {
+			if (this.response == "deleted") {
 				modal_body.removeChild(fileHtml);
 			}
 			console.log(this.response)
@@ -360,14 +368,14 @@ function editClaim() {
 	let rows = document.querySelectorAll(".editable-row");
 
 	if (rows.length != 1) {
-		return document.getElementsByTagName("header")[0].innerHTML = 
-		`                
+		return document.getElementsByTagName("header")[0].innerHTML =
+			`                
 		<div class="alert alert-warning alert-dismissible text-center fade show" role="alert">
 			<button type="button" class="close" data-dismiss="alert">&times;</button>
 			You need to select one claim at a time.
 		</div>
 		`
-	} 
+	}
 
 	row = rows[0];
 
@@ -377,9 +385,9 @@ function editClaim() {
 }
 
 function eraseEmptyDiv(rows) {
-	for(let row of rows){
+	for (let row of rows) {
 		for (let td of row.children) {
-			if(td.innerText == "") {
+			if (td.innerText == "") {
 				td.innerHTML = "";
 			}
 		}
@@ -387,3 +395,168 @@ function eraseEmptyDiv(rows) {
 
 	console.log("eraseEmptyDiv")
 }
+
+function showClosedClaims() {
+
+	let table = document.querySelector("table");
+
+	let request = new XMLHttpRequest();
+
+	request.open("GET", "/claims_closed");
+	request.send();
+
+	request.onreadystatechange = function () {
+		if (this.readyState == 4) {
+
+			let claims = JSON.parse(request.responseText);
+
+			console.log(claims)
+
+			let html_claims = "";
+
+			for (let claim of claims) {
+
+				let modal_files = "";
+
+				for (let file of claim.files) {
+
+					modal_files +=
+						`
+					<a target="_blank" href="/download_file/${file.id}}/${claim.id}" style="width:90%"
+					file_id="${file.id}" claim_id="${claim.id}"
+					class="btn btn-outline-secondary modal_file">
+					${file.file_name}
+					</a> 
+					`
+				}
+
+				html_claims +=
+					`
+
+				<tr scope="row" claim_id="${claim.id}" contenteditable="false" class="non_open">
+
+				<td class="align-middle" meaning="unit">
+					<div class="claim-cell">
+						${ claim.unit}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="customer">
+					<div class="claim-cell">
+						${ claim.customer}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="bl">
+					<div class="claim-cell">
+						${ claim.bl}
+					</div>
+				</td>
+				<td class="align-middle" meaning="charge">
+					<div class="claim-cell ">
+						${ claim.charge}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="invoice">
+					<div class="claim-cell">
+						${ claim.invoice}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="date">
+					<div class="claim-cell">
+						${ claim.date}
+					</div>
+				</td>
+
+				<td class="align-middle status_${claim.status}" meaning="status">
+					<div class="claim-cell">
+						${ claim.status}
+					</div>
+
+				</td>
+
+				<td class="align-middle" meaning="attachements">
+
+					<form action="/add_file" method="POST" enctype="multipart/form-data" claim_id=${claim.id}>
+						<div class="btn-group btn-group-toggle" max-widt="100%">
+
+							<label class="btn btn-secondary" style="width:50%;">
+								<input type="file" name="claim_file" class="btn btn-secondary" style="display: none;"
+									placeholder="+">+
+							</label>
+
+							<!-- Button trigger modal -->
+
+							<button type="button" class="btn btn-secondary buttonAndCounter${claim.id}"
+								style="width:50%;" data-toggle="modal" data-target="#claim-${claim.id}">
+								${claim.files.length}
+							</button>
+
+						</div>
+					</form>
+
+					<!-- Modal -->
+
+					<div class="modal fade" id="claim-${claim.id}" tabindex="-1" role="dialog"
+						aria-labelledby="claim-${claim.id}" aria-hidden="true">
+						<div class="modal-dialog modal-dialog-centered" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="claim-${claim.id}">Attachements</h5>
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">&times;</span>
+									</button>
+								</div>
+								<div class="modal-body"> 
+								
+								${modal_files}
+								
+								</div>
+								<div class="modal-footer">
+									<label type="button" class="btn btn-danger"
+										onclick="deleteFileMode(this.parentNode.parentNode.children[1])">
+										Delete a file
+									</label>
+
+									<label type="button" class="btn btn-secondary" data-dismiss="modal">
+										Close
+									</label>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="damage">
+					<div class="claim-cell">
+						${ claim.damage}
+					</div>
+				</td>
+
+				<td class="align-middle" meaning="commnet">
+					<div class="claim-cell" style="width: 15em;">
+						${ claim.comment}
+					</div>
+				</td>
+			</tr>
+
+				`
+
+				//html_claims.push(html_claim);
+			}
+
+			table.innerHTML += html_claims
+			addListeners(document.querySelectorAll("tr"));
+
+		}
+	}
+
+	//delete the buttom
+	let btn = document.querySelector("#closedClaimsBtn");
+	btn.parentElement.removeChild(btn);
+
+}
+

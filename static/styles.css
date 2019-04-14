@@ -110,10 +110,20 @@ td {
     background-color: red;
 }
 
-div
+[contenteditable='false']
 {
     -webkit-user-select: none;  /* Chrome all / Safari all */
     -moz-user-select: none;     /* Firefox all */
     -ms-user-select: none;      /* IE 10+ */
     user-select: none;          /* Likely future */      
+}
+
+.status_PAID
+{
+    background-color: #f5b82e
+}
+
+.status_CLOSE
+{
+    background-color: #ca1f1f
 }
