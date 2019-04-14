@@ -133,8 +133,8 @@ function saveAllEditables() {
 function deleteClaim(claimId) {
 
 	let header = document.querySelector("header");
-	let table = document.querySelector("main tbody");
-	let htmlRow = document.querySelector(`main [claim_id='${claimId}']`);
+	let table = document.querySelector("#main-table tbody");
+	let htmlRow = document.querySelector(`[claim_id='${claimId}']`);
 
 	let xhttp = new XMLHttpRequest();
 	xhttp.open("GET", "/erase_claim/" + claimId, true);
@@ -142,7 +142,8 @@ function deleteClaim(claimId) {
 	xhttp.onreadystatechange = function () {
 		if (this.readyState == 4) {
 			console.log("server: ", this.responseText);
-			console.log(table)
+			console.log(table);
+			console.log(htmlRow);
 			table.removeChild(htmlRow);
 			header.innerHTML = ""
 

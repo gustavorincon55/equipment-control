@@ -67,7 +67,7 @@ def add_claim():
     if request.method == "POST":
 
         claim = Claim( unit=request.form.get("unit"), customer=request.form.get("customer"), bl=request.form.get("bl"),
-        charge=usd(request.form.get("charge")), date=request.form.get("date"),invoice = request.form.get("invoice"), status="Open",
+        charge=usd(request.form.get("charge")), date=request.form.get("date"),invoice = request.form.get("invoice"), status=request.form.get("status"),
         damage=request.form.get("damage"), comment=request.form.get("comment"), country = request.form.get("country"))
 
         db.session.add(claim)
