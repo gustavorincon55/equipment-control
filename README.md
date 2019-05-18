@@ -1,6 +1,6 @@
 # equipment-control
 
-Administrative tool to keep track of claims among other things.
+Administrative tool to keep track of claims.
 
 Administrative tool meant to be used by a team, to keep track of equipment claims. This tool was created by me to solve the need of a stable and fast tool to keep track of multiple claims with multiple attachments. 
 
